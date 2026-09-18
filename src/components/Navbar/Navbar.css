@@ -1,0 +1,396 @@
+/* Floating Navbar Wrapper */
+.navbar-wrapper {
+  position: fixed;
+  top: 1.5rem;
+  inset-inline: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-inline: 2rem;
+  pointer-events: none;
+  transition: top 300ms cubic-bezier(0.16, 1, 0.3, 1), padding 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.navbar-wrapper--scrolled {
+  top: 1rem;
+  padding-inline: 2rem;
+}
+
+/* Navbar Bar: Floating White Oval / Pill Container */
+.navbar-bar {
+  pointer-events: auto;
+  width: 100%;
+  background-color: #FFFFFF;
+  border: 1px solid rgba(11, 42, 74, 0.08);
+  border-radius: var(--radius-pill);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  box-sizing: border-box;
+  transition:
+    max-width 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    height 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    padding 300ms cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 300ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* INITIAL STATE: Top of Page (Large Floating White Oval / Pill) */
+.navbar-bar--top {
+  max-width: 1180px;
+  height: 64px;
+  padding-inline: 2rem;
+  box-shadow: 0 8px 26px -6px rgba(11, 42, 74, 0.08), 0 2px 6px rgba(11, 42, 74, 0.03);
+}
+
+/* SCROLL STATE: After Scroll (Slightly More Compact Floating White Oval) */
+.navbar-bar--scrolled {
+  max-width: 1040px;
+  height: 56px;
+  padding-inline: 1.75rem;
+  box-shadow: 0 12px 32px -6px rgba(11, 42, 74, 0.14), 0 2px 8px rgba(11, 42, 74, 0.04);
+}
+
+/* Side Sections (Brand & Actions) */
+.navbar-side {
+  display: flex;
+  align-items: center;
+  flex: 1;
+}
+
+.navbar-brand-wrap {
+  justify-content: flex-start;
+}
+
+.navbar-brand {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  line-height: 0;
+}
+
+.navbar-logo {
+  height: 42px;
+  width: auto;
+  object-fit: contain;
+  transition: height 320ms cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+}
+
+.navbar-bar--scrolled .navbar-logo {
+  height: 36px;
+}
+
+.navbar-brand:hover .navbar-logo {
+  opacity: 0.88;
+}
+
+/* Center Navigation Links */
+.navbar-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 2;
+}
+
+.navbar-links {
+  display: flex;
+  align-items: center;
+  gap: 2.25rem;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-link {
+  font-size: 0.9375rem;
+  font-weight: 500;
+  color: var(--color-navy);
+  opacity: 0.75;
+  text-decoration: none;
+  padding-block: 0.35rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transition: opacity 0.2s ease, color 0.2s ease;
+  position: relative;
+}
+
+.navbar-link:hover {
+  opacity: 1;
+  color: var(--color-blue);
+}
+
+.navbar-link--active {
+  opacity: 1;
+  font-weight: 700;
+  color: var(--color-blue);
+}
+
+.navbar-link-indicator {
+  display: block;
+  width: 18px;
+  height: 2.5px;
+  background-color: var(--color-blue);
+  border-radius: var(--radius-pill);
+  margin-top: 3px;
+}
+
+/* Actions & Language Switcher */
+.navbar-actions {
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.navbar-locale-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  background: transparent;
+  border: none;
+  padding: 0.35rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+.navbar-locale-pill:hover {
+  color: var(--color-blue);
+}
+
+.navbar-globe-icon {
+  color: var(--color-navy);
+  opacity: 0.8;
+  flex-shrink: 0;
+}
+
+.navbar-locale-pill:hover .navbar-globe-icon {
+  color: var(--color-blue);
+  opacity: 1;
+}
+
+.navbar-locale-text {
+  line-height: 1;
+}
+
+.navbar-locale-chevron {
+  opacity: 0.6;
+}
+
+/* Hamburger Trigger */
+.navbar-hamburger {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  color: var(--color-navy);
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.navbar-hamburger:hover {
+  background-color: var(--color-soft-neutral);
+}
+
+/* Floating Mobile Card */
+.navbar-mobile-card {
+  pointer-events: auto;
+  width: 100%;
+  max-width: 440px;
+  margin-top: 0.625rem;
+  background: var(--color-white);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  box-shadow: var(--shadow-floating);
+  padding: 1rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  animation: navbarSlideDown 0.2s ease-out;
+}
+
+@keyframes navbarSlideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.navbar-mobile-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.navbar-mobile-link {
+  display: block;
+  padding: 0.75rem 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  border-radius: var(--radius-sm);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.navbar-mobile-link:hover {
+  background-color: var(--color-soft-neutral);
+  color: var(--color-blue);
+}
+
+.navbar-mobile-link--active {
+  background-color: rgba(47, 107, 255, 0.08);
+  color: var(--color-blue);
+}
+
+.navbar-mobile-footer {
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+  display: flex;
+  justify-content: center;
+}
+
+.navbar-mobile-locale {
+  width: 100%;
+  padding: 0.65rem;
+  text-align: center;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  background: var(--color-soft-neutral);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.navbar-mobile-backdrop {
+  pointer-events: auto;
+  position: fixed;
+  inset: 0;
+  background: rgba(11, 42, 74, 0.18);
+  z-index: -1;
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1024px) {
+  .navbar-bar--top {
+    height: 66px;
+    padding-inline: 2rem;
+  }
+
+  .navbar-bar--scrolled {
+    max-width: 100%;
+    height: 56px;
+    padding-inline: 1.5rem;
+  }
+}
+
+/* Responsive Breakpoints */
+@media (max-width: 1360px) {
+  .navbar-bar--top {
+    max-width: 1080px; /* Approximately 1000–1100px wide */
+  }
+
+  .navbar-bar--scrolled {
+    max-width: 980px;
+  }
+}
+
+@media (max-width: 1024px) {
+  .navbar-wrapper {
+    top: 1.25rem;
+    padding-inline: 16px;
+  }
+
+  .navbar-wrapper--scrolled {
+    top: 0.75rem;
+    padding-inline: 16px;
+  }
+
+  .navbar-bar {
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .navbar-bar--top {
+    height: 60px;
+    padding-inline: 1.5rem;
+  }
+
+  .navbar-bar--scrolled {
+    height: 54px;
+    padding-inline: 1.25rem;
+  }
+}
+
+@media (max-width: 900px) {
+  .navbar-center {
+    display: none;
+  }
+
+  .navbar-hamburger {
+    display: flex;
+  }
+}
+
+@media (max-width: 768px) {
+  .navbar-wrapper {
+    top: 12px;
+    padding-inline: 12px;
+  }
+
+  .navbar-wrapper--scrolled {
+    top: 8px;
+    padding-inline: 12px;
+  }
+
+  .navbar-bar {
+    width: 100%;
+    max-width: 100%;
+    border-radius: var(--radius-pill);
+  }
+
+  .navbar-bar--top {
+    height: 56px;
+    padding-inline: 1rem;
+    box-shadow: 0 6px 20px -4px rgba(11, 42, 74, 0.1), 0 2px 6px rgba(11, 42, 74, 0.04);
+  }
+
+  .navbar-bar--scrolled {
+    height: 50px;
+    padding-inline: 0.875rem;
+    box-shadow: 0 8px 24px -4px rgba(11, 42, 74, 0.14), 0 2px 6px rgba(11, 42, 74, 0.04);
+  }
+
+  .navbar-logo {
+    height: 32px;
+  }
+
+  .navbar-bar--scrolled .navbar-logo {
+    height: 28px;
+  }
+
+  .navbar-hamburger {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    min-height: 44px;
+    display: flex;
+  }
+
+  .navbar-locale-pill {
+    display: inline-flex;
+    padding: 0.35rem 0.5rem;
+    min-height: 44px;
+    font-size: 0.8125rem;
+  }
+
+  .navbar-locale-chevron {
+    display: none;
+  }
+}

@@ -1,0 +1,300 @@
+/* Full-Width Immersive Hero Section */
+.hero-section {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  grid-template-rows: auto auto;
+  position: relative;
+}
+
+/* Hero Banner — Spans Edge-to-Edge of Browser Window */
+.hero-banner {
+  grid-column: 1;
+  grid-row: 1 / 3; /* Spans row 1 & row 2 on desktop */
+  width: 100%;
+  max-width: none;
+  border-radius: 0; /* Touches left & right viewport borders */
+  position: relative;
+  overflow: hidden;
+  height: 74vh;
+  min-height: 660px;
+  max-height: 760px;
+  display: flex;
+  align-items: center;
+  padding-top: 6.5rem; /* Room for floating navbar */
+  padding-bottom: 6rem; /* Room for search overlap */
+  box-sizing: border-box;
+}
+
+/* Realistic Residential Bedroom Photography */
+.hero-media-wrap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+}
+
+.hero-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center 38%;
+  display: block;
+}
+
+/* Seamless transition from White Header down into Hero Photo */
+.hero-top-transition {
+  display: none;
+}
+
+/* Subtle Localized Treatment — Keeps left window, city view & plants sharp & clear */
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.28) 0%,
+    rgba(255, 255, 255, 0.14) 24%,
+    rgba(255, 255, 255, 0) 42%
+  );
+}
+
+[dir="rtl"] .hero-overlay {
+  background:
+    radial-gradient(
+      ellipse 60% 55% at 76% 36%,
+      rgba(11, 42, 74, 0.12) 0%,
+      rgba(11, 42, 74, 0.05) 45%,
+      transparent 75%
+    ),
+    linear-gradient(
+      270deg,
+      rgba(255, 255, 255, 0.45) 0%,
+      rgba(255, 255, 255, 0.22) 28%,
+      transparent 52%
+    );
+}
+
+/* Content Container — Left-aligned in LTR, Right-aligned in RTL */
+.hero-content-container {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  display: flex;
+}
+
+.hero-content-card {
+  max-width: 540px; /* Approximately 40-45% of container */
+  margin-inline-start: 0;
+  margin-inline-end: auto;
+  text-align: start;
+}
+
+/* Arabic RTL: Position in visually quieter upper-right wall area above bed */
+[dir="rtl"] .hero-content-card {
+  margin-top: -2.5rem;
+  max-width: 500px;
+}
+
+/* Kicker, Headline, Subtitle Hierarchy */
+.hero-kicker {
+  display: inline-block;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--color-navy);
+  opacity: 0.7;
+  margin-bottom: 0.875rem;
+}
+
+.hero-headline {
+  font-size: 3.25rem;
+  font-weight: 800;
+  line-height: 1.18;
+  letter-spacing: -0.025em;
+  color: var(--color-navy);
+  margin-bottom: 0;
+}
+
+.hero-subtitle {
+  font-size: 1.0625rem;
+  font-weight: 500;
+  line-height: 1.65;
+  color: var(--color-navy);
+  opacity: 0.75;
+  max-width: 480px;
+}
+
+/* Arabic RTL Typography Refinements */
+[dir="rtl"] .hero-headline {
+  letter-spacing: normal;
+  color: var(--color-navy);
+  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.9), 0 0 3px rgba(255, 255, 255, 0.6);
+}
+
+[dir="rtl"] .hero-subtitle {
+  letter-spacing: normal;
+  color: var(--color-navy);
+  opacity: 0.9;
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.85);
+}
+
+[dir="rtl"] .hero-kicker {
+  letter-spacing: normal;
+  color: var(--color-navy);
+  opacity: 0.85;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.8);
+}
+
+/* Floating Search Area — Overlaps lower portion of full-width Hero */
+.hero-search-area {
+  grid-column: 1;
+  grid-row: 2 / 4; /* Row 2 overlaps bottom of hero-banner, Row 3 extends below */
+  width: 100%;
+  max-width: 1180px; /* Approximately 1100px–1250px with comfortable margins */
+  justify-self: center;
+  align-self: center;
+  padding-inline: 1.5rem;
+  position: relative;
+  z-index: 10;
+  box-sizing: border-box;
+}
+
+/* Tablet Responsiveness (769px–1024px) */
+@media (max-width: 1024px) {
+  .hero-banner {
+    min-height: 600px;
+    height: 68vh;
+    padding-top: 6rem;
+    padding-bottom: 5.5rem;
+  }
+
+  .hero-content-card {
+    max-width: 480px;
+  }
+
+  [dir="rtl"] .hero-content-card {
+    margin-top: -1.5rem;
+    max-width: 440px;
+  }
+
+  .hero-headline {
+    font-size: 2.5rem;
+  }
+
+  .hero-subtitle {
+    font-size: 1rem;
+  }
+
+  .hero-search-area {
+    padding-inline: 1.25rem;
+  }
+}
+
+/* Mobile Responsiveness (<= 768px) */
+@media (max-width: 768px) {
+  .hero-section {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+
+  .hero-banner {
+    grid-column: 1;
+    grid-row: 1 / 4; /* Spans behind content and vertical search on mobile */
+    min-height: 560px;
+    height: auto;
+    max-height: none;
+    padding-top: 5.5rem;
+    padding-bottom: 3rem;
+    padding-inline: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .hero-image {
+    object-position: 65% 25%;
+  }
+
+  .hero-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.55) 0%,
+      rgba(255, 255, 255, 0.38) 45%,
+      rgba(255, 255, 255, 0.12) 100%
+    );
+  }
+
+  .hero-content-container {
+    justify-content: center;
+    padding-inline: 0.5rem;
+  }
+
+  .hero-content-card {
+    max-width: 100%;
+    margin-inline: auto;
+    text-align: center;
+    margin-bottom: 1.75rem;
+  }
+
+  [dir="rtl"] .hero-content-card {
+    margin-top: 0;
+    max-width: 100%;
+    text-align: center;
+  }
+
+  .hero-kicker {
+    font-size: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .hero-headline {
+    font-size: 1.85rem;
+    line-height: 1.25;
+    margin-bottom: 0;
+  }
+
+  .hero-subtitle {
+    font-size: 0.9375rem;
+    line-height: 1.6;
+    max-width: 340px;
+    margin-inline: auto;
+  }
+
+  .hero-search-area {
+    grid-column: 1;
+    grid-row: 2 / 3; /* Embedded inside the hero image */
+    padding-inline: 1rem;
+    margin-bottom: 2rem;
+    max-width: 100%;
+  }
+}
+
+/* Extra Small Mobile (390px, 375px, 360px) */
+@media (max-width: 390px) {
+  .hero-banner {
+    padding-top: 5rem;
+    padding-bottom: 2rem;
+    padding-inline: 0.75rem;
+  }
+
+  .hero-headline {
+    font-size: 1.625rem;
+  }
+
+  .hero-search-area {
+    padding-inline: 0.75rem;
+  }
+}
