@@ -8,6 +8,8 @@ import HomePage from './pages/HomePage';
 import PropertiesPage from './pages/PropertiesPage';
 import PropertyDetailsPage from './pages/PropertyDetailsPage';
 import AboutPage from './pages/AboutPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 
 export default function App() {
   const [locale, setLocale] = useState<Locale>('ar');
@@ -23,6 +25,11 @@ export default function App() {
     <LocaleContext.Provider value={{ locale, setLocale, t, direction }}>
       <BrowserRouter>
         <Routes>
+          {/* Standalone full-viewport Authentication routes */}
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+
+          {/* Core app routes wrapped in Navbar & Footer Layout */}
           <Route element={<Layout />}>
             <Route path="/" element={<HomePage />} />
             <Route path="/properties" element={<PropertiesPage />} />

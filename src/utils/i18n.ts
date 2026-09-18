@@ -7,6 +7,8 @@ export interface TranslationStrings {
   nav_home: string;
   nav_properties: string;
   nav_about: string;
+  nav_login: string;
+  nav_register: string;
   site_name: string;
 
   // Page titles
@@ -122,6 +124,39 @@ export interface TranslationStrings {
   properties_bedrooms_1: string;
   properties_bedrooms_2: string;
   properties_bedrooms_3plus: string;
+
+  // Auth
+  auth_login_eyebrow: string;
+  auth_login_title: string;
+  auth_login_subtitle: string;
+  auth_register_eyebrow: string;
+  auth_register_title: string;
+  auth_register_subtitle: string;
+  auth_name_label: string;
+  auth_name_placeholder: string;
+  auth_email_label: string;
+  auth_email_placeholder: string;
+  auth_password_label: string;
+  auth_password_placeholder: string;
+  auth_confirm_password_label: string;
+  auth_confirm_password_placeholder: string;
+  auth_remember_me: string;
+  auth_forgot_password: string;
+  auth_login_button: string;
+  auth_register_button: string;
+  auth_divider_or: string;
+  auth_google_login: string;
+  auth_google_register: string;
+  auth_no_account: string;
+  auth_create_account_link: string;
+  auth_have_account: string;
+  auth_login_link: string;
+  auth_brand_badge: string;
+  auth_brand_tagline: string;
+  auth_brand_feature1: string;
+  auth_brand_feature2: string;
+  auth_brand_feature3: string;
+  auth_back_home: string;
 }
 
 export const translations: Record<Locale, TranslationStrings> = {
@@ -129,6 +164,8 @@ export const translations: Record<Locale, TranslationStrings> = {
     nav_home: 'الرئيسية',
     nav_properties: 'العقارات',
     nav_about: 'عن داري',
+    nav_login: 'تسجيل الدخول',
+    nav_register: 'إنشاء حساب',
     site_name: 'داري',
 
     page_home_title: 'الرئيسية',
@@ -234,11 +271,46 @@ export const translations: Record<Locale, TranslationStrings> = {
     properties_bedrooms_1: 'غرفة واحدة',
     properties_bedrooms_2: 'غرفتان',
     properties_bedrooms_3plus: '3 غرف أو أكثر',
+
+    // Auth
+    auth_login_eyebrow: 'مرحبًا بعودتك',
+    auth_login_title: 'تسجيل الدخول',
+    auth_login_subtitle: 'سجّل دخولك للوصول إلى حسابك ومتابعة خيارات السكن المناسبة لك.',
+    auth_register_eyebrow: 'ابدأ رحلتك مع داري',
+    auth_register_title: 'إنشاء حساب',
+    auth_register_subtitle: 'أنشئ حسابك لاستكشاف السكن المناسب لك بسهولة.',
+    auth_name_label: 'الاسم الكامل',
+    auth_name_placeholder: 'أحمد محمد',
+    auth_email_label: 'البريد الإلكتروني',
+    auth_email_placeholder: 'name@example.com',
+    auth_password_label: 'كلمة المرور',
+    auth_password_placeholder: '••••••••',
+    auth_confirm_password_label: 'تأكيد كلمة المرور',
+    auth_confirm_password_placeholder: '••••••••',
+    auth_remember_me: 'تذكرني',
+    auth_forgot_password: 'نسيت كلمة المرور؟',
+    auth_login_button: 'تسجيل الدخول',
+    auth_register_button: 'إنشاء حساب',
+    auth_divider_or: 'أو',
+    auth_google_login: 'المتابعة باستخدام Google',
+    auth_google_register: 'التسجيل باستخدام Google',
+    auth_no_account: 'ليس لديك حساب؟',
+    auth_create_account_link: 'إنشاء حساب',
+    auth_have_account: 'لديك حساب بالفعل؟',
+    auth_login_link: 'تسجيل الدخول',
+    auth_brand_badge: 'داري للسكن الطلابي',
+    auth_brand_tagline: 'سكنك الطلابي الأنسب، بخطوات أوضح وأسهل',
+    auth_brand_feature1: 'تواصل مباشر مع المالك',
+    auth_brand_feature2: 'عقارات مناسبة لميزانيتك',
+    auth_brand_feature3: 'خيارات سكنية قريبة من جامعتك',
+    auth_back_home: 'العودة للرئيسية',
   },
   en: {
     nav_home: 'Home',
     nav_properties: 'Properties',
     nav_about: 'About',
+    nav_login: 'Sign in',
+    nav_register: 'Create account',
     site_name: 'DARY',
 
     page_home_title: 'Home',
@@ -344,6 +416,39 @@ export const translations: Record<Locale, TranslationStrings> = {
     properties_bedrooms_1: '1 Bedroom',
     properties_bedrooms_2: '2 Bedrooms',
     properties_bedrooms_3plus: '3+ Bedrooms',
+
+    // Auth
+    auth_login_eyebrow: 'Welcome back',
+    auth_login_title: 'Sign in',
+    auth_login_subtitle: 'Sign in to access your account and continue exploring housing options that suit you.',
+    auth_register_eyebrow: 'Start your journey with DARY',
+    auth_register_title: 'Create your account',
+    auth_register_subtitle: 'Create your account to easily explore housing options that suit you.',
+    auth_name_label: 'Full name',
+    auth_name_placeholder: 'Mohamed Ahmed',
+    auth_email_label: 'Email',
+    auth_email_placeholder: 'name@example.com',
+    auth_password_label: 'Password',
+    auth_password_placeholder: '••••••••',
+    auth_confirm_password_label: 'Confirm password',
+    auth_confirm_password_placeholder: '••••••••',
+    auth_remember_me: 'Remember me',
+    auth_forgot_password: 'Forgot password?',
+    auth_login_button: 'Sign in',
+    auth_register_button: 'Create account',
+    auth_divider_or: 'or',
+    auth_google_login: 'Continue with Google',
+    auth_google_register: 'Sign up with Google',
+    auth_no_account: "Don't have an account?",
+    auth_create_account_link: 'Create account',
+    auth_have_account: 'Already have an account?',
+    auth_login_link: 'Sign in',
+    auth_brand_badge: 'DARY Student Living',
+    auth_brand_tagline: 'The student housing that fits you, made simpler',
+    auth_brand_feature1: 'Direct contact with owners',
+    auth_brand_feature2: 'Homes that fit your budget',
+    auth_brand_feature3: 'Housing options near your university',
+    auth_back_home: 'Back to home',
   },
 };
 

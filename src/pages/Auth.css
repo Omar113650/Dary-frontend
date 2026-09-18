@@ -1,0 +1,723 @@
+/* ==========================================================================
+   DARY AUTHENTICATION UI — REFINED CONTAINED PRODUCT SHELL
+   ========================================================================== */
+
+/* Outer Canvas: Soft Neutral (#F7F8FA) with Generous Spacing */
+.auth-page-root {
+  min-height: 100vh;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #F7F8FA;
+  padding: 2.5rem 1.5rem;
+  box-sizing: border-box;
+  font-family: inherit;
+  color: #0B2A4A;
+  overflow-x: hidden;
+}
+
+/* Centered Authentication Shell Container (1200–1350px) */
+.auth-shell {
+  width: 100%;
+  max-width: 1260px;
+  min-height: 800px;
+  background-color: #FFFFFF;
+  border-radius: 28px;
+  border: 1px solid rgba(11, 42, 74, 0.07);
+  box-shadow: 0 20px 50px -12px rgba(11, 42, 74, 0.08), 0 1px 3px rgba(11, 42, 74, 0.04);
+  overflow: hidden;
+  display: flex;
+  flex-direction: row;
+}
+
+/* Desktop: Form is ALWAYS on the LEFT, Brand is ALWAYS on the RIGHT */
+[dir="rtl"] .auth-shell {
+  flex-direction: row-reverse;
+}
+
+/* ==========================================================================
+   1. FORM AREA (LEFT ~50% — CLEAN WHITE PRODUCT SURFACE)
+   ========================================================================== */
+.auth-form-panel {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem 3.5rem;
+  background-color: #FFFFFF;
+  overflow-y: auto;
+}
+
+/* Top Utility Bar: Perfectly Grid-Aligned with the Form Content */
+.auth-top-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  max-width: 470px;
+  width: 100%;
+  margin-inline: auto;
+  margin-bottom: 1.75rem;
+}
+
+.auth-brand-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.auth-mobile-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  transition: opacity 0.2s ease;
+}
+
+.auth-brand-link:hover .auth-mobile-logo {
+  opacity: 0.88;
+}
+
+.auth-top-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.auth-back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #0B2A4A;
+  opacity: 0.82;
+  text-decoration: none;
+  padding: 0.35rem 0.65rem;
+  border-radius: var(--radius-pill, 9999px);
+  transition: all 0.2s ease;
+}
+
+.auth-back-link:hover {
+  opacity: 1;
+  color: #2F6BFF;
+  background-color: #F8FAFC;
+}
+
+.auth-locale-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  height: 34px;
+  padding-inline: 0.75rem;
+  background-color: #F8FAFC;
+  border: 1px solid #E2E8F0;
+  border-radius: var(--radius-pill, 9999px);
+  color: #0B2A4A;
+  font-size: 0.8125rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-locale-btn:hover {
+  border-color: #B69F77;
+  color: #0B2A4A;
+  background-color: #FFFFFF;
+  box-shadow: 0 1px 6px rgba(182, 159, 119, 0.15);
+}
+
+/* Centered Form Content Box: Wider for comfortable layout (470px) */
+.auth-form-container {
+  max-width: 470px;
+  width: 100%;
+  margin-inline: auto;
+  margin-block: auto;
+  padding-block: 0.75rem;
+}
+
+.auth-form-header {
+  margin-bottom: 1.75rem;
+  text-align: start;
+}
+
+.auth-eyebrow-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.auth-eyebrow-accent {
+  width: 16px;
+  height: 2px;
+  background-color: #B69F77; /* Subtle DARY Gold accent line */
+  border-radius: 2px;
+}
+
+.auth-eyebrow {
+  font-size: 0.8125rem;
+  font-weight: 700;
+  color: #2F6BFF;
+  letter-spacing: 0.02em;
+}
+
+.auth-title {
+  font-size: clamp(1.75rem, 2.3vw, 2.05rem);
+  font-weight: 800;
+  color: #0B2A4A;
+  letter-spacing: -0.02em;
+  line-height: 1.25;
+  margin: 0 0 0.5rem 0;
+}
+
+.auth-subtitle {
+  font-size: 0.9125rem;
+  color: #64748B;
+  line-height: 1.55;
+  margin: 0;
+}
+
+/* Form Groups & Inputs */
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+}
+
+.auth-field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  text-align: start;
+}
+
+.auth-label {
+  font-size: 0.8438rem;
+  font-weight: 600;
+  color: #0B2A4A;
+}
+
+.auth-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.auth-input-icon {
+  position: absolute;
+  inset-inline-start: 1rem;
+  color: #94A3B8;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s ease;
+}
+
+.auth-input-wrapper:focus-within .auth-input-icon {
+  color: #2F6BFF;
+}
+
+.auth-input {
+  width: 100%;
+  height: 48px;
+  padding-inline-start: 2.85rem;
+  padding-inline-end: 2.85rem;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  color: #0B2A4A;
+  background-color: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: #2F6BFF;
+  box-shadow: 0 0 0 3px rgba(47, 107, 255, 0.14);
+}
+
+.auth-input::placeholder {
+  color: #94A3B8;
+}
+
+.auth-password-toggle {
+  position: absolute;
+  inset-inline-end: 0.85rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.auth-password-toggle:hover {
+  color: #0B2A4A;
+  background-color: #F8FAFC;
+}
+
+/* Remember Me & Forgot Password Row */
+.auth-options-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.8438rem;
+}
+
+.auth-checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #475569;
+  font-weight: 500;
+  cursor: pointer;
+  user-select: none;
+}
+
+.auth-checkbox {
+  width: 17px;
+  height: 17px;
+  border-radius: 4px;
+  border: 1px solid #CBD5E1;
+  accent-color: #2F6BFF;
+  cursor: pointer;
+}
+
+.auth-forgot-link {
+  color: #2F6BFF;
+  font-weight: 600;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.auth-forgot-link:hover {
+  color: #1A5AE0;
+  text-decoration: underline;
+}
+
+/* Primary CTA Button: DARY Blue (#2F6BFF), Rounded (Not Pill), 50px Height */
+.auth-submit-btn {
+  height: 50px;
+  width: 100%;
+  border-radius: 12px;
+  background-color: #2F6BFF;
+  color: #FFFFFF;
+  border: none;
+  font-family: inherit;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  box-shadow: 0 4px 14px rgba(47, 107, 255, 0.24);
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+}
+
+.auth-submit-btn:hover:not(:disabled) {
+  background-color: #1A5AE0;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(47, 107, 255, 0.34);
+}
+
+.auth-submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* Divider */
+.auth-divider {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  margin-block: 0.35rem;
+  color: #94A3B8;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.auth-divider::before,
+.auth-divider::after {
+  content: "";
+  flex: 1;
+  height: 1px;
+  background-color: #E2E8F0;
+}
+
+/* Google Social Button */
+.auth-google-btn {
+  height: 48px;
+  width: 100%;
+  border-radius: 12px;
+  background-color: #FFFFFF;
+  color: #0B2A4A;
+  border: 1px solid #E2E8F0;
+  font-family: inherit;
+  font-size: 0.9125rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.auth-google-btn:hover {
+  background-color: #F8FAFC;
+  border-color: #CBD5E1;
+  box-shadow: 0 1px 4px rgba(11, 42, 74, 0.04);
+}
+
+/* Switch Link Footer */
+.auth-switch-prompt {
+  text-align: center;
+  font-size: 0.9rem;
+  color: #64748B;
+  margin-top: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  flex-wrap: wrap;
+}
+
+.auth-switch-link {
+  color: #2F6BFF;
+  font-weight: 700;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.auth-switch-link:hover {
+  color: #1A5AE0;
+  text-decoration: underline;
+}
+
+/* Spinner */
+.auth-btn-spinner {
+  animation: authSpin 0.9s linear infinite;
+}
+
+@keyframes authSpin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ==========================================================================
+   2. BRAND AREA (RIGHT ~50% — DEEP NAVY #0B2A4A WITH GOLD ACCENTS)
+   ========================================================================== */
+.auth-visual-panel {
+  flex: 1;
+  min-width: 0;
+  position: relative;
+  background-color: #0B2A4A;
+  /* Tastefully calibrated overlay: realistic student bedroom remains clearly recognizable */
+  background-image:
+    linear-gradient(
+      180deg,
+      rgba(11, 42, 74, 0.52) 0%,
+      rgba(11, 42, 74, 0.68) 45%,
+      rgba(11, 42, 74, 0.84) 100%
+    ),
+    url("../assets/hero/hero-apartment.jpg");
+  background-size: cover;
+  background-position: center;
+  padding: 3.25rem 3.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  color: #FFFFFF;
+  overflow: hidden;
+}
+
+.auth-visual-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 2;
+}
+
+.auth-visual-logo-wrap {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.auth-visual-logo {
+  height: 38px;
+  width: auto;
+  object-fit: contain;
+  /* Official DARY logo in white on the Navy background */
+  filter: brightness(0) invert(1);
+  transition: opacity 0.2s ease;
+}
+
+.auth-visual-logo-wrap:hover .auth-visual-logo {
+  opacity: 0.88;
+}
+
+.auth-visual-content {
+  max-width: 480px;
+  margin-block: auto;
+  padding-block: 2rem;
+  z-index: 2;
+  text-align: start;
+}
+
+/* Label Badge with DARY Gold Accents */
+.auth-visual-tagline-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem;
+  border-radius: var(--radius-pill, 9999px);
+  background: rgba(182, 159, 119, 0.16); /* Subtle DARY Gold tint */
+  border: 1px solid rgba(182, 159, 119, 0.42); /* DARY Gold border */
+  color: #F1E9DB; /* Warm champagne gold text */
+  font-size: 0.8125rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  margin-bottom: 1.35rem;
+}
+
+.auth-gold-badge-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: #B69F77;
+  display: inline-block;
+}
+
+.auth-visual-title {
+  font-size: clamp(1.75rem, 2.4vw, 2.25rem);
+  font-weight: 800;
+  line-height: 1.35;
+  color: #FFFFFF;
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.auth-visual-pillars {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.auth-visual-pillar-item {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  font-size: 0.975rem;
+  color: rgba(255, 255, 255, 0.95);
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+/* Pillar icon circle with subtle DARY Gold / Blue balance */
+.auth-visual-pillar-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(182, 159, 119, 0.18);
+  border: 1px solid rgba(182, 159, 119, 0.4);
+  color: #D4C4A8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.auth-visual-footer {
+  padding-top: 1.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.8125rem;
+  color: rgba(255, 255, 255, 0.7);
+  z-index: 2;
+}
+
+.auth-visual-badge-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.75rem;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-pill, 9999px);
+  color: #FFFFFF;
+  font-size: 0.7813rem;
+  font-weight: 600;
+  border: 1px solid rgba(182, 159, 119, 0.28); /* Subtle Gold border detail */
+}
+
+.auth-footer-gold-star {
+  color: #B69F77;
+}
+
+/* ==========================================================================
+   3. RESPONSIVE BREAKPOINTS
+   ========================================================================== */
+@media (max-width: 1140px) {
+  .auth-shell {
+    max-width: 1020px;
+    min-height: 740px;
+  }
+
+  .auth-form-panel {
+    padding: 2.5rem 2.5rem;
+  }
+
+  .auth-visual-panel {
+    padding: 2.5rem 2.5rem;
+  }
+}
+
+@media (max-width: 960px) {
+  .auth-page-root {
+    padding: 1.5rem 1rem;
+  }
+
+  .auth-shell {
+    min-height: 680px;
+  }
+
+  .auth-form-panel {
+    padding: 2rem 1.75rem;
+  }
+
+  .auth-visual-panel {
+    padding: 2rem 1.75rem;
+  }
+
+  .auth-visual-title {
+    font-size: 1.65rem;
+  }
+}
+
+/* Mobile: Single column inside the rounded shell */
+@media (max-width: 860px) {
+  .auth-page-root {
+    padding: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .auth-shell,
+  [dir="rtl"] .auth-shell {
+    flex-direction: column;
+    min-height: auto;
+    border-radius: 20px;
+    box-shadow: 0 8px 30px rgba(11, 42, 74, 0.08);
+  }
+
+  /* Navy brand banner at top of shell */
+  .auth-visual-panel {
+    order: -1;
+    flex: none;
+    width: 100%;
+    min-height: auto;
+    padding: 2rem 1.5rem 1.75rem;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .auth-visual-header {
+    margin-bottom: 1rem;
+  }
+
+  .auth-visual-logo {
+    height: 32px;
+  }
+
+  .auth-visual-content {
+    padding-block: 0;
+    max-width: 100%;
+    margin-block: 0;
+  }
+
+  .auth-visual-tagline-badge {
+    margin-bottom: 0.6rem;
+    font-size: 0.75rem;
+    padding: 0.25rem 0.65rem;
+  }
+
+  .auth-visual-title {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    margin-bottom: 0;
+  }
+
+  /* Hide pillars & footer in compact mobile banner */
+  .auth-visual-pillars,
+  .auth-visual-footer {
+    display: none;
+  }
+
+  /* Form panel below banner */
+  .auth-form-panel {
+    flex: none;
+    width: 100%;
+    min-height: auto;
+    padding: 1.75rem 1.25rem 2.25rem;
+  }
+
+  .auth-mobile-logo {
+    display: none;
+  }
+
+  .auth-top-bar {
+    max-width: 100%;
+    margin-bottom: 1.25rem;
+    justify-content: flex-end;
+  }
+
+  .auth-form-container {
+    max-width: 100%;
+    padding-block: 0;
+  }
+
+  .auth-title {
+    font-size: 1.625rem;
+  }
+}
+
+@media (max-width: 440px) {
+  .auth-form-panel {
+    padding: 1.5rem 1rem 2rem;
+  }
+
+  .auth-input {
+    height: 46px;
+    font-size: 0.875rem;
+  }
+
+  .auth-submit-btn,
+  .auth-google-btn {
+    height: 46px;
+    font-size: 0.875rem;
+  }
+
+  .auth-options-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.6rem;
+  }
+}

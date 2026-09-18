@@ -138,7 +138,9 @@
 /* Actions & Language Switcher */
 .navbar-actions {
   justify-content: flex-end;
-  gap: 0.75rem;
+  align-items: center;
+  gap: 0.625rem;
+  flex-shrink: 0;
 }
 
 .navbar-locale-pill {
@@ -153,6 +155,7 @@
   color: var(--color-navy);
   cursor: pointer;
   transition: color 0.2s ease;
+  flex-shrink: 0;
 }
 
 .navbar-locale-pill:hover {
@@ -176,6 +179,74 @@
 
 .navbar-locale-chevron {
   opacity: 0.6;
+}
+
+/* Authentication Divider & Desktop Actions */
+.navbar-auth-divider {
+  width: 1px;
+  height: 20px;
+  background-color: rgba(11, 42, 74, 0.12);
+  margin-inline: 0.25rem;
+  flex-shrink: 0;
+}
+
+.navbar-auth-desktop {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.navbar-auth-login {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.65rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  text-decoration: none;
+  border-radius: var(--radius-pill);
+  transition: color 0.2s ease, background-color 0.2s ease;
+  white-space: nowrap;
+}
+
+.navbar-auth-login:hover {
+  color: var(--color-blue);
+  background-color: var(--color-soft-neutral);
+}
+
+.navbar-auth-login--active {
+  color: var(--color-blue);
+  font-weight: 700;
+}
+
+.navbar-auth-register {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 38px;
+  padding-inline: 1.125rem;
+  background-color: var(--color-blue);
+  color: #FFFFFF;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-pill);
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(47, 107, 255, 0.24);
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.navbar-bar--scrolled .navbar-auth-register {
+  height: 34px;
+  padding-inline: 1rem;
+}
+
+.navbar-auth-register:hover {
+  background-color: var(--color-blue-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(47, 107, 255, 0.32);
 }
 
 /* Hamburger Trigger */
@@ -249,6 +320,58 @@
   color: var(--color-blue);
 }
 
+/* Mobile Authentication Actions */
+.navbar-mobile-auth {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--color-border);
+}
+
+.navbar-mobile-auth-login {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 42px;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  color: var(--color-navy);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  background-color: var(--color-soft-neutral);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.navbar-mobile-auth-login:hover {
+  background-color: rgba(11, 42, 74, 0.06);
+  color: var(--color-blue);
+}
+
+.navbar-mobile-auth-login--active {
+  color: var(--color-blue);
+  font-weight: 700;
+}
+
+.navbar-mobile-auth-register {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 44px;
+  font-size: 0.9375rem;
+  font-weight: 700;
+  color: #FFFFFF;
+  background-color: var(--color-blue);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  box-shadow: 0 2px 8px rgba(47, 107, 255, 0.25);
+  transition: background-color 0.15s ease;
+}
+
+.navbar-mobile-auth-register:hover {
+  background-color: var(--color-blue-hover);
+}
+
 .navbar-mobile-footer {
   padding-top: 0.75rem;
   border-top: 1px solid var(--color-border);
@@ -277,27 +400,23 @@
 }
 
 /* Responsive Breakpoints */
-@media (max-width: 1024px) {
+@media (max-width: 1360px) {
   .navbar-bar--top {
-    height: 66px;
-    padding-inline: 2rem;
+    max-width: 1120px;
   }
 
   .navbar-bar--scrolled {
-    max-width: 100%;
-    height: 56px;
-    padding-inline: 1.5rem;
+    max-width: 1020px;
+  }
+
+  .navbar-links {
+    gap: 1.75rem;
   }
 }
 
-/* Responsive Breakpoints */
-@media (max-width: 1360px) {
-  .navbar-bar--top {
-    max-width: 1080px; /* Approximately 1000–1100px wide */
-  }
-
-  .navbar-bar--scrolled {
-    max-width: 980px;
+@media (max-width: 1100px) {
+  .navbar-links {
+    gap: 1.25rem;
   }
 }
 
@@ -330,6 +449,11 @@
 
 @media (max-width: 900px) {
   .navbar-center {
+    display: none;
+  }
+
+  .navbar-auth-divider,
+  .navbar-auth-desktop {
     display: none;
   }
 

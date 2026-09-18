@@ -74,7 +74,7 @@ export default function Navbar() {
           </ul>
         </div>
 
-        {/* Language Switcher & Mobile Hamburger */}
+        {/* Language Switcher, Desktop Auth & Mobile Hamburger */}
         <div className="navbar-side navbar-actions">
           <button
             type="button"
@@ -117,6 +117,27 @@ export default function Navbar() {
             </svg>
           </button>
 
+          <div className="navbar-auth-divider" aria-hidden="true" />
+
+          {/* Desktop Authentication Actions */}
+          <div className="navbar-auth-desktop">
+            <Link
+              to="/login"
+              className={
+                'navbar-auth-login' +
+                (isActive('/login') ? ' navbar-auth-login--active' : '')
+              }
+            >
+              {t.nav_login}
+            </Link>
+            <Link
+              to="/register"
+              className="navbar-auth-register"
+            >
+              {t.nav_register}
+            </Link>
+          </div>
+
           <button
             type="button"
             className="navbar-hamburger"
@@ -158,6 +179,28 @@ export default function Navbar() {
               </li>
             ))}
           </ul>
+
+          {/* Mobile Authentication Actions */}
+          <div className="navbar-mobile-auth">
+            <Link
+              to="/login"
+              className={
+                'navbar-mobile-auth-login' +
+                (isActive('/login') ? ' navbar-mobile-auth-login--active' : '')
+              }
+              onClick={() => setMobileOpen(false)}
+            >
+              {t.nav_login}
+            </Link>
+            <Link
+              to="/register"
+              className="navbar-mobile-auth-register"
+              onClick={() => setMobileOpen(false)}
+            >
+              {t.nav_register}
+            </Link>
+          </div>
+
           <div className="navbar-mobile-footer">
             <button
               type="button"
