@@ -62,6 +62,25 @@ export default function PropertiesPage() {
   // Mobile Filter Drawer State
   const [mobileDrawerOpen, setMobileDrawerOpen] = useState(false);
 
+  // Lock body scroll and handle ESC key when mobile drawer is open
+  useEffect(() => {
+    if (mobileDrawerOpen) {
+      document.body.style.overflow = 'hidden';
+      const handleKeyDown = (e: KeyboardEvent) => {
+        if (e.key === 'Escape') {
+          setMobileDrawerOpen(false);
+        }
+      };
+      window.addEventListener('keydown', handleKeyDown);
+      return () => {
+        document.body.style.overflow = '';
+        window.removeEventListener('keydown', handleKeyDown);
+      };
+    } else {
+      document.body.style.overflow = '';
+    }
+  }, [mobileDrawerOpen]);
+
   // Data & Lifecycle States
   const [properties, setProperties] = useState<Property[]>([]);
   const [loading, setLoading] = useState(true);
@@ -115,7 +134,7 @@ export default function PropertiesPage() {
       .catch((err: any) => {
         if (!ignore) {
           console.error('Failed to load properties from API:', err);
-          setError(err?.message || t.properties_error_title);
+          setError(t.properties_error_desc);
           setProperties([]);
           setLoading(false);
         }
@@ -124,7 +143,7 @@ export default function PropertiesPage() {
     return () => {
       ignore = true;
     };
-  }, [debouncedSearch, city, propertyType, priceRange, bedrooms, reloadTrigger, t.properties_error_title]);
+  }, [debouncedSearch, city, propertyType, priceRange, bedrooms, reloadTrigger, t.properties_error_desc]);
 
   const loadProperties = useCallback(() => {
     setReloadTrigger((prev) => prev + 1);
@@ -237,7 +256,7 @@ export default function PropertiesPage() {
             >
               {cityOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label[locale]}
+                  {opt.value ? opt.label[locale] : `${t.properties_filter_location}: ${opt.label[locale]}`}
                 </option>
               ))}
             </select>
@@ -253,7 +272,7 @@ export default function PropertiesPage() {
             >
               {typeOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label[locale]}
+                  {opt.value ? opt.label[locale] : `${t.properties_filter_type}: ${opt.label[locale]}`}
                 </option>
               ))}
             </select>
@@ -269,7 +288,7 @@ export default function PropertiesPage() {
             >
               {priceRanges.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.label[locale]}
+                  {opt.value ? opt.label[locale] : `${t.properties_filter_price}: ${opt.label[locale]}`}
                 </option>
               ))}
             </select>
@@ -285,7 +304,7 @@ export default function PropertiesPage() {
             >
               {bedroomOptions.map((opt) => (
                 <option key={opt.value} value={opt.value}>
-                  {opt.value ? `${t.properties_filter_bedrooms}: ${opt.label[locale]}` : `${t.properties_filter_bedrooms}: ${opt.label[locale]}`}
+                  {opt.value ? opt.label[locale] : `${t.properties_filter_bedrooms}: ${opt.label[locale]}`}
                 </option>
               ))}
             </select>
@@ -367,15 +386,20 @@ export default function PropertiesPage() {
         {loading && (
           <div className="properties-grid" aria-busy="true" aria-label="Loading properties">
             {[1, 2, 3, 4, 5, 6].map((n) => (
-              <div key={n} className="property-skeleton-card">
-                <div className="skeleton-media shimmer" />
+              <div key={n} className="property-skeleton-card" aria-hidden="true">
+                <div className="skeleton-media shimmer">
+                  <div className="skeleton-badge shimmer" />
+                </div>
                 <div className="skeleton-body">
-                  <div className="skeleton-line skeleton-line--sm shimmer" />
-                  <div className="skeleton-line skeleton-line--lg shimmer" />
-                  <div className="skeleton-line skeleton-line--md shimmer" />
+                  <div className="skeleton-location shimmer" />
+                  <div className="skeleton-title shimmer" />
+                  <div className="skeleton-specs">
+                    <div className="skeleton-spec shimmer" />
+                    <div className="skeleton-spec shimmer" />
+                  </div>
                   <div className="skeleton-footer">
-                    <div className="skeleton-line skeleton-line--sm shimmer" />
-                    <div className="skeleton-line skeleton-line--btn shimmer" />
+                    <div className="skeleton-price shimmer" />
+                    <div className="skeleton-btn shimmer" />
                   </div>
                 </div>
               </div>
@@ -400,7 +424,13 @@ export default function PropertiesPage() {
               className="error-retry-btn"
               onClick={handleRetry}
             >
-              {t.properties_error_retry}
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12a9 9 0 0 0-9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" />
+                <path d="M3 3v5h5" />
+                <path d="M3 12a9 9 0 0 0 9 9 9.75 9.75 0 0 0 6.74-2.74L21 16" />
+                <path d="M16 21h5v-5" />
+              </svg>
+              <span>{t.properties_error_retry}</span>
             </button>
           </div>
         )}

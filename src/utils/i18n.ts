@@ -15,6 +15,18 @@ export interface TranslationStrings {
   page_property_details_title: string;
   page_about_title: string;
 
+  // About Page
+  about_hero_title: string;
+  about_hero_subtitle: string;
+  about_purpose_tagline: string;
+  about_purpose_title: string;
+  about_mission_label: string;
+  about_mission_title: string;
+  about_mission_desc: string;
+  about_vision_label: string;
+  about_vision_title: string;
+  about_vision_desc: string;
+
   // Hero
   hero_kicker: string;
   hero_headline: string;
@@ -101,6 +113,7 @@ export interface TranslationStrings {
   properties_empty_title: string;
   properties_empty_desc: string;
   properties_error_title: string;
+  properties_error_desc: string;
   properties_error_retry: string;
   properties_mobile_filters_btn: string;
   properties_mobile_close: string;
@@ -122,6 +135,18 @@ export const translations: Record<Locale, TranslationStrings> = {
     page_properties_title: 'العقارات',
     page_property_details_title: 'تفاصيل العقار',
     page_about_title: 'عن داري',
+
+    // About Page
+    about_hero_title: 'عن داري',
+    about_hero_subtitle: 'نعمل على تبسيط تجربة السكن الطلابي وربط الطلاب بالسكن المناسب بطريقة أوضح وأسهل.',
+    about_purpose_tagline: 'رؤيتنا ورسالتنا',
+    about_purpose_title: 'نبني تجربة سكن طلابي استثنائية',
+    about_mission_label: 'رسالتنا',
+    about_mission_title: 'تسهيل تجربة السكن الطلابي',
+    about_mission_desc: 'تسهيل تجربة السكن الطلابي من خلال منصة موثوقة تربطهم مباشرة بأصحاب الشقق، وتوفر وقتهم وتقلل التكاليف وتضمن تجربة حجز آمنة وشفافة بدون وسطاء.',
+    about_vision_label: 'رؤيتنا',
+    about_vision_title: 'المنصة الأكثر ثقة للمغتربين',
+    about_vision_desc: 'أن نكون المنصة الأكثر ثقة التي تحل مشاكل السكن للمغتربين.',
 
     hero_kicker: '',
     hero_headline: 'بنو ّصلك للي يناسبك',
@@ -200,6 +225,7 @@ export const translations: Record<Locale, TranslationStrings> = {
     properties_empty_title: 'لا توجد عقارات تطابق بحثك.',
     properties_empty_desc: 'جرّب تغيير خيارات البحث أو إعادة ضبط الفلاتر للوصول إلى خيارات أكثر.',
     properties_error_title: 'تعذر تحميل العقارات',
+    properties_error_desc: 'تعذر الاتصال بالخادم في الوقت الحالي. يرجى التحقق من اتصالك بالإنترنت والمحاولة مجدداً.',
     properties_error_retry: 'إعادة المحاولة',
     properties_mobile_filters_btn: 'تصفية النتائج',
     properties_mobile_close: 'إغلاق',
@@ -219,6 +245,18 @@ export const translations: Record<Locale, TranslationStrings> = {
     page_properties_title: 'Properties',
     page_property_details_title: 'Property Details',
     page_about_title: 'About',
+
+    // About Page
+    about_hero_title: 'About DARY',
+    about_hero_subtitle: 'We make the student-housing experience simpler by connecting students with suitable homes in a clearer and easier way.',
+    about_purpose_tagline: 'Our Purpose',
+    about_purpose_title: 'Building an Exceptional Student Living Experience',
+    about_mission_label: 'Our Mission',
+    about_mission_title: 'Empowering Student Living',
+    about_mission_desc: 'Facilitating the student housing experience through a reliable platform that connects them directly with apartment owners, saving them time, reducing costs, and ensuring a safe and transparent booking experience without brokers.',
+    about_vision_label: 'Our Vision',
+    about_vision_title: 'The Most Trusted Platform',
+    about_vision_desc: 'To be the most trusted platform that solves housing problems for expatriates.',
 
     hero_kicker: '',
     hero_headline: 'We connect you with what suits you',
@@ -297,6 +335,7 @@ export const translations: Record<Locale, TranslationStrings> = {
     properties_empty_title: 'No properties match your search.',
     properties_empty_desc: 'Try adjusting your search terms or resetting filters to see more results.',
     properties_error_title: 'Failed to load properties',
+    properties_error_desc: 'Unable to connect to the server at this time. Please check your internet connection and try again.',
     properties_error_retry: 'Try Again',
     properties_mobile_filters_btn: 'Filters',
     properties_mobile_close: 'Close',

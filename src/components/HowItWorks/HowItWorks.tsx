@@ -50,8 +50,12 @@ export default function HowItWorks() {
         <div className="how-grid">
           {steps.map((step) => (
             <div className="how-card" key={step.num}>
-              <div className="how-step-badge">{step.num}</div>
-              <div className="how-icon-wrap">{step.icon}</div>
+              <div className="how-step-indicator">
+                <span className="how-step-num">0{step.num}</span>
+              </div>
+              <div className="how-icon-wrap" aria-hidden="true">
+                {step.icon}
+              </div>
               <h3 className="how-card-title">{step.title}</h3>
               <p className="how-card-desc">{step.desc}</p>
             </div>
