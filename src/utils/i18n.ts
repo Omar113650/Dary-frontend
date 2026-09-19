@@ -9,6 +9,11 @@ export interface TranslationStrings {
   nav_about: string;
   nav_login: string;
   nav_register: string;
+  nav_dashboard: string;
+  auth_tenant_only_title: string;
+  auth_tenant_only_desc: string;
+  auth_logout_btn: string;
+  loading: string;
   site_name: string;
 
   // Page titles
@@ -33,6 +38,7 @@ export interface TranslationStrings {
   hero_kicker: string;
   hero_headline: string;
   hero_subtitle: string;
+  hero_search_placeholder: string;
 
   // Search
   search_location: string;
@@ -52,6 +58,9 @@ export interface TranslationStrings {
   trust_direct_desc: string;
   trust_trusted: string;
   trust_trusted_desc: string;
+  trust_community: string;
+  trust_safe_env: string;
+  trust_trusted_props: string;
 
   // Featured Properties
   featured_tagline: string;
@@ -151,12 +160,69 @@ export interface TranslationStrings {
   auth_create_account_link: string;
   auth_have_account: string;
   auth_login_link: string;
+  auth_role_label: string;
+  auth_role_tenant: string;
+  auth_role_owner: string;
+  auth_first_name_label: string;
+  auth_first_name_placeholder: string;
+  auth_last_name_label: string;
+  auth_last_name_placeholder: string;
+  auth_phone_label: string;
+  auth_phone_placeholder: string;
+  auth_phone_hint: string;
+  auth_whatsapp_label: string;
+  auth_whatsapp_placeholder: string;
+  auth_password_rules: string;
+  auth_otp_title: string;
+  auth_otp_subtitle: string;
+  auth_otp_label: string;
+  auth_otp_button: string;
+  auth_otp_resend: string;
+  auth_otp_resend_countdown: string;
+  auth_otp_success_msg: string;
   auth_brand_badge: string;
   auth_brand_tagline: string;
   auth_brand_feature1: string;
   auth_brand_feature2: string;
   auth_brand_feature3: string;
   auth_back_home: string;
+  auth_forgot_title: string;
+  auth_forgot_subtitle: string;
+  auth_forgot_btn: string;
+  auth_forgot_success_title: string;
+  auth_forgot_success_desc: string;
+  auth_reset_title: string;
+  auth_reset_subtitle: string;
+  auth_reset_btn: string;
+  auth_reset_success_title: string;
+  auth_reset_success_desc: string;
+  auth_reset_invalid_token: string;
+  auth_back_to_login: string;
+  auth_new_password_label: string;
+
+  // Profile Security
+  sec_title: string;
+  sec_subtitle: string;
+  sec_pwd_title: string;
+  sec_pwd_desc: string;
+  sec_pwd_btn: string;
+  sec_pwd_sending: string;
+  sec_pwd_sent: string;
+  sec_pwd_goto_reset: string;
+  sec_del_title: string;
+  sec_del_perm_pending_title: string;
+  sec_del_perm_pending_desc: string;
+  sec_del_contact_support: string;
+  sec_del_desc: string;
+  sec_del_btn: string;
+  sec_del_modal_title: string;
+  sec_del_modal_warning: string;
+  sec_del_modal_confirm_phrase: string;
+  sec_del_modal_cancel: string;
+  sec_del_modal_confirm_btn: string;
+  sec_del_deleting: string;
+  sec_del_error_403: string;
+  sec_del_error_generic: string;
 }
 
 export const translations: Record<Locale, TranslationStrings> = {
@@ -166,6 +232,11 @@ export const translations: Record<Locale, TranslationStrings> = {
     nav_about: 'عن داري',
     nav_login: 'تسجيل الدخول',
     nav_register: 'إنشاء حساب',
+    nav_dashboard: 'لوحة التحكم',
+    auth_tenant_only_title: 'لوحة تحكم المستأجرين',
+    auth_tenant_only_desc: 'هذه الصفحة مخصصة لحسابات الطلاب والمستأجرين فقط.',
+    auth_logout_btn: 'تسجيل الخروج',
+    loading: 'جاري التحميل...',
     site_name: 'داري',
 
     page_home_title: 'الرئيسية',
@@ -185,9 +256,10 @@ export const translations: Record<Locale, TranslationStrings> = {
     about_vision_title: 'المنصة الأكثر ثقة للمغتربين',
     about_vision_desc: 'أن نكون المنصة الأكثر ثقة التي تحل مشاكل السكن للمغتربين.',
 
-    hero_kicker: '',
-    hero_headline: 'بنو ّصلك للي يناسبك',
-    hero_subtitle: '',
+    hero_kicker: 'مرحباً بك في داري',
+    hero_headline: 'أكثر من مجرد سكن\nمجتمع يبني مستقبلك',
+    hero_subtitle: 'اكتشف أفضل خيارات السكن للطلاب في مكان واحد',
+    hero_search_placeholder: 'ابحث عن مدينة، جامعة أو منطقة...',
 
     search_location: 'الموقع',
     search_type: 'نوع العقار',
@@ -205,6 +277,9 @@ export const translations: Record<Locale, TranslationStrings> = {
     trust_direct_desc: 'تواصل مباشرة مع أصحاب الشقق بدون وسطاء.',
     trust_trusted: 'موثوق',
     trust_trusted_desc: 'تجربة سكن موثوقة وشفافة مصممة خصيصاً للطلاب.',
+    trust_community: 'مجتمع طلابي مميز',
+    trust_safe_env: 'بيئة آمنة',
+    trust_trusted_props: 'عقارات موثوقة',
 
     featured_tagline: 'مختارات مميزة',
     featured_title: 'عقارات مميزة للطلاب',
@@ -298,12 +373,69 @@ export const translations: Record<Locale, TranslationStrings> = {
     auth_create_account_link: 'إنشاء حساب',
     auth_have_account: 'لديك حساب بالفعل؟',
     auth_login_link: 'تسجيل الدخول',
+    auth_role_label: 'نوع الحساب',
+    auth_role_tenant: 'طالب / مستأجر',
+    auth_role_owner: 'مالك عقار',
+    auth_first_name_label: 'الاسم الأول',
+    auth_first_name_placeholder: 'أحمد',
+    auth_last_name_label: 'اسم العائلة',
+    auth_last_name_placeholder: 'محمد',
+    auth_phone_label: 'رقم الهاتف',
+    auth_phone_placeholder: '+20 10 1234 5678',
+    auth_phone_hint: 'أدخل رقمك مسبوقاً برمز الدولة (مثال: +20...)',
+    auth_whatsapp_label: 'رقم الواتساب (اختياري)',
+    auth_whatsapp_placeholder: '+20 10 1234 5678',
+    auth_password_rules: '8 أحرف على الأقل، حرف كبير، حرف صغير، رقم، ورمز خاص',
+    auth_otp_title: 'تأكيد الحساب (رمز OTP)',
+    auth_otp_subtitle: 'أدخل رمز التحقق المكون من 6 أرقام المرسل إلى بريدك الإلكتروني لتفعيل حسابك.',
+    auth_otp_label: 'رمز التحقق (OTP)',
+    auth_otp_button: 'تأكيد الحساب والمتابعة',
+    auth_otp_resend: 'إعادة إرسال الرمز',
+    auth_otp_resend_countdown: 'يمكنك طلب رمز جديد بعد',
+    auth_otp_success_msg: 'تم تأكيد بريدك الإلكتروني بنجاح! يمكنك الآن تسجيل الدخول.',
     auth_brand_badge: 'داري للسكن الطلابي',
     auth_brand_tagline: 'سكنك الطلابي الأنسب، بخطوات أوضح وأسهل',
     auth_brand_feature1: 'تواصل مباشر مع المالك',
     auth_brand_feature2: 'عقارات مناسبة لميزانيتك',
     auth_brand_feature3: 'خيارات سكنية قريبة من جامعتك',
     auth_back_home: 'العودة للرئيسية',
+    auth_forgot_title: 'استعادة كلمة المرور',
+    auth_forgot_subtitle: 'أدخل بريدك الإلكتروني وسنساعدك على استعادة حسابك.',
+    auth_forgot_btn: 'إرسال رابط الاستعادة',
+    auth_forgot_success_title: 'تم إرسال رابط الاستعادة',
+    auth_forgot_success_desc: 'إذا كان البريد الإلكتروني مسجلاً لدينا، فستتلقى رابطاً لإعادة تعيين كلمة المرور.',
+    auth_reset_title: 'تعيين كلمة مرور جديدة',
+    auth_reset_subtitle: 'أدخل كلمة المرور الجديدة لحسابك وتأكد من مطابقتها للشروط.',
+    auth_reset_btn: 'حفظ كلمة المرور الجديدة',
+    auth_reset_success_title: 'تم تغيير كلمة المرور بنجاح',
+    auth_reset_success_desc: 'تم تحديث كلمة المرور الخاصة بحسابك بنجاح. يمكنك الآن تسجيل الدخول.',
+    auth_reset_invalid_token: 'رابط إعادة تعيين كلمة المرور غير صالح أو انتهت صلاحيته.',
+    auth_back_to_login: 'العودة لتسجيل الدخول',
+    auth_new_password_label: 'كلمة المرور الجديدة',
+
+    // Security
+    sec_title: 'الأمان وحماية الحساب',
+    sec_subtitle: 'إدارة إعدادات الأمان واستعادة كلمة المرور وإجراءات الحساب.',
+    sec_pwd_title: 'كلمة المرور وحماية الحساب',
+    sec_pwd_desc: 'يتم تأمين حسابك بكلمة مرور مشفرة. لتحديث أو إعادة تعيين كلمة المرور، يمكنك طلب رابط إعادة التعيين الذي يصل إلى بريدك الإلكتروني المسجل.',
+    sec_pwd_btn: 'طلب رابط إعادة تعيين كلمة المرور',
+    sec_pwd_sending: 'جاري إرسال الرابط...',
+    sec_pwd_sent: 'تم إرسال رابط إعادة التعيين إلى بريدك الإلكتروني بنجاح. يرجى التحقق من صندوق الوارد.',
+    sec_pwd_goto_reset: 'فتح صفحة استعادة كلمة المرور',
+    sec_del_title: 'حذف الحساب',
+    sec_del_perm_pending_title: 'حذف الحساب غير متاح حالياً',
+    sec_del_perm_pending_desc: 'حذف الحساب عبر الخدمة الذاتية غير مفعل لحسابات المستأجرين والملاك بانتظار تأكيد صلاحية (user.delete) من قبل إدارة النظام. يمكنك التواصل مع الدعم الفني لتقديم طلب حذف الحساب.',
+    sec_del_contact_support: 'طلب المساعدة عبر تذاكر الدعم',
+    sec_del_desc: 'سيؤدي حذف حسابك إلى إلغاء صلاحيات الوصول وإزالة بياناتك بشكل دائم. لا يمكن التراجع عن هذا الإجراء.',
+    sec_del_btn: 'حذف الحساب',
+    sec_del_modal_title: 'حذف الحساب',
+    sec_del_modal_warning: 'هل أنت متأكد من حذف حسابك؟ لا يمكن التراجع عن هذا الإجراء.',
+    sec_del_modal_confirm_phrase: 'لتأكيد الحذف، يرجى كتابة DELETE في الحقل أدناه:',
+    sec_del_modal_cancel: 'إلغاء',
+    sec_del_modal_confirm_btn: 'تأكيد حذف الحساب نهائياً',
+    sec_del_deleting: 'جاري حذف الحساب...',
+    sec_del_error_403: 'ليس لديك الصلاحية الكافية لحذف الحساب (user.delete).',
+    sec_del_error_generic: 'تعذر حذف الحساب في الوقت الحالي. يرجى المحاولة لاحقاً.',
   },
   en: {
     nav_home: 'Home',
@@ -311,6 +443,11 @@ export const translations: Record<Locale, TranslationStrings> = {
     nav_about: 'About',
     nav_login: 'Sign in',
     nav_register: 'Create account',
+    nav_dashboard: 'Dashboard',
+    auth_tenant_only_title: 'Tenant Dashboard',
+    auth_tenant_only_desc: 'This dashboard is reserved for student and tenant accounts only.',
+    auth_logout_btn: 'Sign Out',
+    loading: 'Loading...',
     site_name: 'DARY',
 
     page_home_title: 'Home',
@@ -330,9 +467,10 @@ export const translations: Record<Locale, TranslationStrings> = {
     about_vision_title: 'The Most Trusted Platform',
     about_vision_desc: 'To be the most trusted platform that solves housing problems for expatriates.',
 
-    hero_kicker: '',
-    hero_headline: 'We connect you with what suits you',
-    hero_subtitle: '',
+    hero_kicker: 'Welcome to DARY',
+    hero_headline: 'More than just housing\nA community building your future',
+    hero_subtitle: 'Discover the best student housing options in one place',
+    hero_search_placeholder: 'Search by city, university or area...',
 
     search_location: 'Location',
     search_type: 'Property Type',
@@ -350,6 +488,9 @@ export const translations: Record<Locale, TranslationStrings> = {
     trust_direct_desc: 'Connect directly with apartment owners without intermediaries.',
     trust_trusted: 'Trusted',
     trust_trusted_desc: 'A transparent and reliable housing experience for students.',
+    trust_community: 'Student Community',
+    trust_safe_env: 'Safe Environment',
+    trust_trusted_props: 'Trusted Properties',
 
     featured_tagline: 'Handpicked Listings',
     featured_title: 'Featured Student Housing',
@@ -418,12 +559,12 @@ export const translations: Record<Locale, TranslationStrings> = {
     properties_bedrooms_3plus: '3+ Bedrooms',
 
     // Auth
-    auth_login_eyebrow: 'Welcome back',
+    auth_login_eyebrow: 'Welcome Back',
     auth_login_title: 'Sign in',
-    auth_login_subtitle: 'Sign in to access your account and continue exploring housing options that suit you.',
+    auth_login_subtitle: 'Sign in to access your account and continue your housing journey.',
     auth_register_eyebrow: 'Start your journey with DARY',
-    auth_register_title: 'Create your account',
-    auth_register_subtitle: 'Create your account to easily explore housing options that suit you.',
+    auth_register_title: 'Create account',
+    auth_register_subtitle: 'Start your journey with DARY and easily explore student housing options.',
     auth_name_label: 'Full name',
     auth_name_placeholder: 'Mohamed Ahmed',
     auth_email_label: 'Email',
@@ -443,12 +584,69 @@ export const translations: Record<Locale, TranslationStrings> = {
     auth_create_account_link: 'Create account',
     auth_have_account: 'Already have an account?',
     auth_login_link: 'Sign in',
+    auth_role_label: 'Account type',
+    auth_role_tenant: 'Student / Tenant',
+    auth_role_owner: 'Property Owner',
+    auth_first_name_label: 'First Name',
+    auth_first_name_placeholder: 'Mohamed',
+    auth_last_name_label: 'Last Name',
+    auth_last_name_placeholder: 'Ahmed',
+    auth_phone_label: 'Phone Number',
+    auth_phone_placeholder: '+20 10 1234 5678',
+    auth_phone_hint: 'Enter your phone with country code (e.g. +20...)',
+    auth_whatsapp_label: 'WhatsApp Number (Optional)',
+    auth_whatsapp_placeholder: '+20 10 1234 5678',
+    auth_password_rules: 'At least 8 chars, uppercase, lowercase, number, and special character',
+    auth_otp_title: 'Verify Your Email (OTP)',
+    auth_otp_subtitle: 'Enter the 6-digit code sent to your email to activate your account.',
+    auth_otp_label: 'Verification Code (OTP)',
+    auth_otp_button: 'Verify & Continue',
+    auth_otp_resend: 'Resend Code',
+    auth_otp_resend_countdown: 'You can request a new code in',
+    auth_otp_success_msg: 'Email verified successfully! You can now sign in.',
     auth_brand_badge: 'DARY Student Living',
     auth_brand_tagline: 'The student housing that fits you, made simpler',
     auth_brand_feature1: 'Direct contact with owners',
     auth_brand_feature2: 'Homes that fit your budget',
     auth_brand_feature3: 'Housing options near your university',
     auth_back_home: 'Back to home',
+    auth_forgot_title: 'Reset your password',
+    auth_forgot_subtitle: "Enter your email and we'll help you regain access to your account.",
+    auth_forgot_btn: 'Send reset link',
+    auth_forgot_success_title: 'Reset link sent',
+    auth_forgot_success_desc: 'If an account exists with that email, you will receive a link to reset your password.',
+    auth_reset_title: 'Set new password',
+    auth_reset_subtitle: 'Enter your new password and make sure it meets the security requirements.',
+    auth_reset_btn: 'Save new password',
+    auth_reset_success_title: 'Your password has been reset successfully.',
+    auth_reset_success_desc: 'Your account password has been updated. You can now sign in with your new password.',
+    auth_reset_invalid_token: 'The password reset link is invalid or has expired.',
+    auth_back_to_login: 'Back to sign in',
+    auth_new_password_label: 'New password',
+
+    // Security
+    sec_title: 'Account Security',
+    sec_subtitle: 'Manage your security settings, password recovery, and account actions.',
+    sec_pwd_title: 'Password & Security',
+    sec_pwd_desc: 'Your account is secured with an encrypted password. To update or reset your password, you can request a secure reset link sent to your registered email.',
+    sec_pwd_btn: 'Request Password Reset Link',
+    sec_pwd_sending: 'Sending reset link...',
+    sec_pwd_sent: 'Password reset link has been sent to your email. Please check your inbox.',
+    sec_pwd_goto_reset: 'Go to password reset page',
+    sec_del_title: 'Delete account',
+    sec_del_perm_pending_title: 'Account Deletion Unavailable',
+    sec_del_perm_pending_desc: 'Self-service account deletion is currently unavailable for tenant and owner accounts pending system permission (user.delete) confirmation. Please contact support to request account removal.',
+    sec_del_contact_support: 'Request assistance via Support Tickets',
+    sec_del_desc: 'Deleting your account will permanently revoke your access and remove your data. This action cannot be undone.',
+    sec_del_btn: 'Delete account',
+    sec_del_modal_title: 'Delete account',
+    sec_del_modal_warning: 'Are you sure you want to delete your account? This action cannot be undone.',
+    sec_del_modal_confirm_phrase: 'To confirm deletion, please type DELETE below:',
+    sec_del_modal_cancel: 'Cancel',
+    sec_del_modal_confirm_btn: 'Permanently Delete Account',
+    sec_del_deleting: 'Deleting account...',
+    sec_del_error_403: 'You do not have sufficient permissions to delete this account (user.delete).',
+    sec_del_error_generic: 'Failed to delete account at this time. Please try again later.',
   },
 };
 

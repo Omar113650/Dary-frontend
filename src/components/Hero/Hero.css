@@ -1,41 +1,27 @@
-/* Full-Width Immersive Hero Section */
+/* Full-Viewport 100vh Cinematic Hero Section */
 .hero-section {
+  position: relative;
   width: 100%;
-  max-width: none;
+  height: 100vh;
+  min-height: 680px;
   margin: 0;
   padding: 0;
-  display: grid;
-  grid-template-columns: 1fr;
-  grid-template-rows: auto auto;
-  position: relative;
-}
-
-/* Hero Banner — Spans Edge-to-Edge of Browser Window */
-.hero-banner {
-  grid-column: 1;
-  grid-row: 1 / 3; /* Spans row 1 & row 2 on desktop */
-  width: 100%;
-  max-width: none;
-  border-radius: 0; /* Touches left & right viewport borders */
-  position: relative;
-  overflow: hidden;
-  height: 74vh;
-  min-height: 660px;
-  max-height: 760px;
   display: flex;
   align-items: center;
-  padding-top: 6.5rem; /* Room for floating navbar */
-  padding-bottom: 6rem; /* Room for search overlap */
+  overflow: hidden;
   box-sizing: border-box;
+  padding-top: 5.5rem;
+  padding-bottom: 2rem;
 }
 
-/* Realistic Residential Bedroom Photography */
+/* Full-bleed Photo Coverage — Covers entire viewport edge-to-edge */
 .hero-media-wrap {
   position: absolute;
   inset: 0;
   z-index: 1;
   width: 100%;
   height: 100%;
+  overflow: hidden;
 }
 
 .hero-image {
@@ -46,12 +32,7 @@
   display: block;
 }
 
-/* Seamless transition from White Header down into Hero Photo */
-.hero-top-transition {
-  display: none;
-}
-
-/* Subtle Localized Treatment — Keeps left window, city view & plants sharp & clear */
+/* Subtle Directional Soft Light Overlay — Natural daylight, keeps photo bright */
 .hero-overlay {
   position: absolute;
   inset: 0;
@@ -59,169 +40,202 @@
   pointer-events: none;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.28) 0%,
-    rgba(255, 255, 255, 0.14) 24%,
-    rgba(255, 255, 255, 0) 42%
+    rgba(255, 255, 255, 0.58) 0%,
+    rgba(255, 255, 255, 0.36) 30%,
+    rgba(255, 255, 255, 0.08) 50%,
+    transparent 65%
   );
 }
 
 [dir="rtl"] .hero-overlay {
-  background:
-    radial-gradient(
-      ellipse 60% 55% at 76% 36%,
-      rgba(11, 42, 74, 0.12) 0%,
-      rgba(11, 42, 74, 0.05) 45%,
-      transparent 75%
-    ),
-    linear-gradient(
-      270deg,
-      rgba(255, 255, 255, 0.45) 0%,
-      rgba(255, 255, 255, 0.22) 28%,
-      transparent 52%
-    );
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.6) 0%,
+    rgba(255, 255, 255, 0.38) 32%,
+    rgba(255, 255, 255, 0.1) 52%,
+    transparent 68%
+  );
 }
 
-/* Content Container — Left-aligned in LTR, Right-aligned in RTL */
+/* Content Container — Left Portion (~40-45%) on Desktop */
 .hero-content-container {
   position: relative;
   z-index: 2;
   width: 100%;
+  max-width: 1400px;
+  margin-inline: auto;
+  padding-inline: clamp(1.5rem, 5vw, 4rem);
   display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  box-sizing: border-box;
+  height: 100%;
 }
 
-.hero-content-card {
-  max-width: 540px; /* Approximately 40-45% of container */
-  margin-inline-start: 0;
-  margin-inline-end: auto;
+/* Hero Content Column — All items vertically aligned on left */
+.hero-content-column {
+  width: 100%;
+  max-width: 590px;
+  margin-left: 0;
+  margin-right: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1.5rem;
+  box-sizing: border-box;
+}
+
+[dir="rtl"] .hero-content-column {
+  margin-left: 0;
+  margin-right: auto;
+  align-items: flex-start;
+}
+
+/* Hero Text Card */
+.hero-text-card {
+  width: 100%;
   text-align: start;
 }
 
-/* Arabic RTL: Position in visually quieter upper-right wall area above bed */
-[dir="rtl"] .hero-content-card {
-  margin-top: -2.5rem;
-  max-width: 500px;
+[dir="rtl"] .hero-text-card {
+  text-align: right;
 }
 
-/* Kicker, Headline, Subtitle Hierarchy */
+/* Eyebrow with subtle Gold accent dot */
+.hero-kicker-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.hero-kicker-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background-color: var(--color-gold);
+  flex-shrink: 0;
+}
+
 .hero-kicker {
-  display: inline-block;
-  font-size: 0.8125rem;
+  font-size: 0.9375rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
   color: var(--color-navy);
-  opacity: 0.7;
-  margin-bottom: 0.875rem;
+  letter-spacing: 0.03em;
 }
 
+/* Headline */
 .hero-headline {
-  font-size: 3.25rem;
+  font-size: 3rem;
   font-weight: 800;
   line-height: 1.18;
-  letter-spacing: -0.025em;
+  letter-spacing: -0.02em;
   color: var(--color-navy);
-  margin-bottom: 0;
+  margin-bottom: 0.85rem;
 }
 
+[dir="rtl"] .hero-headline {
+  letter-spacing: normal;
+  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.95), 0 0 3px rgba(255, 255, 255, 0.7);
+}
+
+/* Supporting Text */
 .hero-subtitle {
   font-size: 1.0625rem;
   font-weight: 500;
-  line-height: 1.65;
+  line-height: 1.6;
   color: var(--color-navy);
-  opacity: 0.75;
+  opacity: 0.85;
   max-width: 480px;
-}
-
-/* Arabic RTL Typography Refinements */
-[dir="rtl"] .hero-headline {
-  letter-spacing: normal;
-  color: var(--color-navy);
-  text-shadow: 0 1px 16px rgba(255, 255, 255, 0.9), 0 0 3px rgba(255, 255, 255, 0.6);
+  margin: 0;
 }
 
 [dir="rtl"] .hero-subtitle {
-  letter-spacing: normal;
-  color: var(--color-navy);
-  opacity: 0.9;
-  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.85);
+  text-shadow: 0 1px 12px rgba(255, 255, 255, 0.9);
 }
 
-[dir="rtl"] .hero-kicker {
-  letter-spacing: normal;
-  color: var(--color-navy);
-  opacity: 0.85;
-  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.8);
-}
-
-/* Floating Search Area — Overlaps lower portion of full-width Hero */
-.hero-search-area {
-  grid-column: 1;
-  grid-row: 2 / 4; /* Row 2 overlaps bottom of hero-banner, Row 3 extends below */
+/* Integrated Search Wrap (sits directly beneath text) */
+.hero-search-wrap {
   width: 100%;
-  max-width: 1180px; /* Approximately 1100px–1250px with comfortable margins */
-  justify-self: center;
-  align-self: center;
-  padding-inline: 1.5rem;
-  position: relative;
-  z-index: 10;
+  max-width: 590px;
   box-sizing: border-box;
+}
+
+/* Trust Features Wrap (directly beneath search) */
+.hero-trust-wrap {
+  width: 100%;
+  max-width: 590px;
+  box-sizing: border-box;
+  padding-top: 0.25rem;
+}
+
+/* Subtle Floating Scroll Down Indicator */
+.hero-scroll-indicator {
+  position: absolute;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(11, 42, 74, 0.12);
+  color: var(--color-navy);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(11, 42, 74, 0.08);
+  transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  animation: heroScrollFloat 2.4s ease-in-out infinite;
+}
+
+.hero-scroll-indicator:hover {
+  background-color: #FFFFFF;
+  box-shadow: 0 6px 18px rgba(11, 42, 74, 0.15);
+}
+
+@keyframes heroScrollFloat {
+  0%, 100% {
+    transform: translate(-50%, 0);
+  }
+  50% {
+    transform: translate(-50%, 6px);
+  }
 }
 
 /* Tablet Responsiveness (769px–1024px) */
 @media (max-width: 1024px) {
-  .hero-banner {
-    min-height: 600px;
-    height: 68vh;
+  .hero-section {
+    height: auto;
+    min-height: 640px;
     padding-top: 6rem;
-    padding-bottom: 5.5rem;
+    padding-bottom: 3.5rem;
   }
 
-  .hero-content-card {
-    max-width: 480px;
-  }
-
-  [dir="rtl"] .hero-content-card {
-    margin-top: -1.5rem;
-    max-width: 440px;
+  .hero-content-column {
+    max-width: 520px;
+    gap: 1.25rem;
   }
 
   .hero-headline {
-    font-size: 2.5rem;
+    font-size: 2.35rem;
   }
 
   .hero-subtitle {
     font-size: 1rem;
-  }
-
-  .hero-search-area {
-    padding-inline: 1.25rem;
   }
 }
 
 /* Mobile Responsiveness (<= 768px) */
 @media (max-width: 768px) {
   .hero-section {
-    display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto;
-    width: 100%;
-    margin: 0;
-    padding: 0;
-  }
-
-  .hero-banner {
-    grid-column: 1;
-    grid-row: 1 / 4; /* Spans behind content and vertical search on mobile */
-    min-height: 560px;
     height: auto;
-    max-height: none;
+    min-height: 100vh;
     padding-top: 5.5rem;
     padding-bottom: 3rem;
     padding-inline: 1rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
   }
 
   .hero-image {
@@ -231,70 +245,76 @@
   .hero-overlay {
     background: linear-gradient(
       180deg,
-      rgba(255, 255, 255, 0.55) 0%,
-      rgba(255, 255, 255, 0.38) 45%,
-      rgba(255, 255, 255, 0.12) 100%
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.52) 50%,
+      rgba(255, 255, 255, 0.25) 100%
+    );
+  }
+
+  [dir="rtl"] .hero-overlay {
+    background: linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.52) 50%,
+      rgba(255, 255, 255, 0.25) 100%
     );
   }
 
   .hero-content-container {
     justify-content: center;
-    padding-inline: 0.5rem;
+    padding-inline: 0;
   }
 
-  .hero-content-card {
+  .hero-content-column {
     max-width: 100%;
-    margin-inline: auto;
+    align-items: center;
     text-align: center;
-    margin-bottom: 1.75rem;
+    gap: 1.25rem;
   }
 
-  [dir="rtl"] .hero-content-card {
-    margin-top: 0;
-    max-width: 100%;
+  .hero-text-card {
     text-align: center;
   }
 
-  .hero-kicker {
-    font-size: 0.75rem;
-    margin-bottom: 0.5rem;
+  [dir="rtl"] .hero-text-card {
+    text-align: center;
+  }
+
+  .hero-kicker-wrap {
+    justify-content: center;
   }
 
   .hero-headline {
     font-size: 1.85rem;
     line-height: 1.25;
-    margin-bottom: 0;
+    margin-bottom: 0.5rem;
   }
 
   .hero-subtitle {
     font-size: 0.9375rem;
-    line-height: 1.6;
+    line-height: 1.55;
     max-width: 340px;
     margin-inline: auto;
   }
 
-  .hero-search-area {
-    grid-column: 1;
-    grid-row: 2 / 3; /* Embedded inside the hero image */
-    padding-inline: 1rem;
-    margin-bottom: 2rem;
+  .hero-search-wrap,
+  .hero-trust-wrap {
     max-width: 100%;
+  }
+
+  .hero-scroll-indicator {
+    display: none;
   }
 }
 
-/* Extra Small Mobile (390px, 375px, 360px) */
 @media (max-width: 390px) {
-  .hero-banner {
-    padding-top: 5rem;
-    padding-bottom: 2rem;
-    padding-inline: 0.75rem;
-  }
-
   .hero-headline {
     font-size: 1.625rem;
   }
+}
 
-  .hero-search-area {
-    padding-inline: 0.75rem;
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-indicator {
+    animation: none;
   }
 }
