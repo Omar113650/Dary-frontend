@@ -135,6 +135,10 @@ export class TenantService {
     return Array.isArray(data) ? data : [];
   }
 
+  static async addFavorite(propertyId: string): Promise<any> {
+    return ApiClient.post('/favorites', { propertyId });
+  }
+
   static async removeFavorite(propertyId: string): Promise<any> {
     return ApiClient.delete(`/favorites/${propertyId}`);
   }
@@ -152,8 +156,27 @@ export class TenantService {
     return ApiClient.delete(`/recently-viewed/${propertyId}`);
   }
 
+  /**
+   * Records that the authenticated user viewed a property.
+   * POST /recently-viewed with { propertyId }
+   */
+  static async recordRecentlyViewed(propertyId: string): Promise<any> {
+    return ApiClient.post('/recently-viewed', { propertyId });
+  }
+
   static async clearRecentlyViewed(): Promise<any> {
     return ApiClient.delete('/dashboard/recently-viewed');
+  }
+
+  // ==========================================
+  // BOOKING REQUEST
+  // ==========================================
+  /**
+   * Creates a new booking/contact request for a property.
+   * POST /booking with { propertyId }
+   */
+  static async createBooking(propertyId: string, payload?: Record<string, any>): Promise<any> {
+    return ApiClient.post('/booking', { propertyId, ...payload });
   }
 
   // ==========================================
