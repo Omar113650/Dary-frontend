@@ -78,10 +78,22 @@ export class AuthService {
    * Backend sets httpOnly AccessToken and RefreshToken cookies.
    */
   static async login(credentials: LoginCredentials): Promise<AuthResponse> {
-    return ApiClient.post<AuthResponse>('/auth/login', {
+    const res = await ApiClient.post<any>('/auth/login', {
       email: credentials.email.trim().toLowerCase(),
       password: credentials.password,
     });
+    const token =
+      res?.token ||
+      res?.accessToken ||
+      res?.data?.token ||
+      res?.data?.accessToken ||
+      res?.data?.tokens?.accessToken ||
+      res?.tokens?.accessToken;
+    if (token && typeof window !== 'undefined') {
+      localStorage.setItem('accessToken', token);
+      localStorage.setItem('token', token);
+    }
+    return res;
   }
 
   /**
@@ -133,6 +145,13 @@ export class AuthService {
       await ApiClient.post('/auth/logout');
     } catch (err) {
       console.warn('[AuthService] Logout request warning:', err);
+    } finally {
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('token');
+        sessionStorage.removeItem('accessToken');
+        sessionStorage.removeItem('token');
+      }
     }
   }
 
@@ -142,7 +161,17 @@ export class AuthService {
    */
   static async refreshToken(): Promise<boolean> {
     try {
-      await ApiClient.post('/auth/refresh-token');
+      const res = await ApiClient.post<any>('/auth/refresh-token');
+      const token =
+        res?.token ||
+        res?.accessToken ||
+        res?.data?.token ||
+        res?.data?.accessToken ||
+        res?.data?.tokens?.accessToken;
+      if (token && typeof window !== 'undefined') {
+        localStorage.setItem('accessToken', token);
+        localStorage.setItem('token', token);
+      }
       return true;
     } catch {
       return false;

@@ -31,6 +31,18 @@ export class ApiClient {
       headers.set('Content-Type', 'application/json');
     }
 
+    // Attach Bearer token from storage if available
+    if (typeof window !== 'undefined' && !headers.has('Authorization')) {
+      const storedToken =
+        localStorage.getItem('accessToken') ||
+        localStorage.getItem('token') ||
+        sessionStorage.getItem('accessToken') ||
+        sessionStorage.getItem('token');
+      if (storedToken) {
+        headers.set('Authorization', `Bearer ${storedToken}`);
+      }
+    }
+
     const config: RequestInit = {
       ...customOptions,
       credentials: 'include',
@@ -84,18 +96,57 @@ export class ApiClient {
 
         if (response.status === 401 && !isAuthEndpoint && !_retry) {
           try {
-            const refreshRes = await fetch(`${API_BASE_URL.replace(/\/+$/, '')}/auth/refresh-token`, {
+            const refreshHeaders = new Headers();
+            refreshHeaders.set('Content-Type', 'application/json');
+            if (typeof window !== 'undefined') {
+              const currentToken =
+                localStorage.getItem('accessToken') || localStorage.getItem('token');
+              if (currentToken) {
+                refreshHeaders.set('Authorization', `Bearer ${currentToken}`);
+              }
+            }
+
+            const refreshBase = url.startsWith('http')
+              ? `${new URL(url).origin}/api/v1`
+              : API_BASE_URL.replace(/\/+$/, '');
+
+            const refreshRes = await fetch(`${refreshBase}/auth/refresh-token`, {
               method: 'POST',
               credentials: 'include',
-              headers: { 'Content-Type': 'application/json' },
+              headers: refreshHeaders,
             });
             if (refreshRes.ok) {
+              const refreshJson = await refreshRes.json().catch(() => null);
+              const refreshedToken =
+                refreshJson?.accessToken ||
+                refreshJson?.token ||
+                refreshJson?.data?.accessToken ||
+                refreshJson?.data?.token;
+              if (refreshedToken && typeof window !== 'undefined') {
+                localStorage.setItem('accessToken', refreshedToken);
+                localStorage.setItem('token', refreshedToken);
+              }
               return this.request<T>(endpoint, { ...options, _retry: true });
             }
           } catch {}
         }
 
         throw new ApiError(message, code, response.status, json);
+      }
+
+      // Automatically store token if returned in successful response body
+      if (json && typeof json === 'object') {
+        const receivedToken =
+          (json as any).accessToken ||
+          (json as any).token ||
+          (json as any).data?.accessToken ||
+          (json as any).data?.token ||
+          (json as any).data?.tokens?.accessToken ||
+          (json as any).tokens?.accessToken;
+        if (receivedToken && typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', receivedToken);
+          localStorage.setItem('token', receivedToken);
+        }
       }
 
       return json as T;
