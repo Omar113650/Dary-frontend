@@ -126,7 +126,7 @@ export class AuthService {
 
   /**
    * 5. POST /auth/logout
-   * Clears server-side refresh token and removes httpOnly session cookies.
+   * Clears server-side refresh token and removes cookies.
    */
   static async logout(): Promise<void> {
     try {
@@ -200,11 +200,8 @@ export class AuthService {
   /**
    * 10. DELETE /auth/delete
    * Deletes the authenticated user's own account.
-   * Documented endpoint: DELETE /auth/delete
-   * Requires authenticated session + user.delete permission.
    */
   static async deleteAccount(): Promise<any> {
     return ApiClient.delete<any>('/auth/delete');
   }
 }
-

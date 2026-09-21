@@ -20,50 +20,7 @@ export class ApiError extends Error {
   }
 }
 
-// Track whether a refresh is currently pending to prevent multiple refresh calls
-let isRefreshing = false;
-let refreshSubscribers: ((success: boolean) => void)[] = [];
-
-function subscribeTokenRefresh(cb: (success: boolean) => void) {
-  refreshSubscribers.push(cb);
-}
-
-function onRefreshed(success: boolean) {
-  refreshSubscribers.forEach((cb) => cb(success));
-  refreshSubscribers = [];
-}
-
 export class ApiClient {
-  private static async performTokenRefresh(): Promise<boolean> {
-    if (isRefreshing) {
-      return new Promise((resolve) => {
-        subscribeTokenRefresh((success) => resolve(success));
-      });
-    }
-
-    isRefreshing = true;
-
-    try {
-      const refreshResponse = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      const refreshOk = refreshResponse.ok;
-      onRefreshed(refreshOk);
-      return refreshOk;
-    } catch (err) {
-      console.error('[ApiClient] Token refresh network failure:', err);
-      onRefreshed(false);
-      return false;
-    } finally {
-      isRefreshing = false;
-    }
-  }
-
   static async request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
     const { data, headers: customHeaders, _retry = false, ...customOptions } = options;
 
@@ -104,17 +61,23 @@ export class ApiClient {
           'Request failed';
         const code = json?.code || json?.error?.code || 'HTTP_ERROR';
 
-        // Single retry on specific 401 message containing 'refresh' or 'expired'
-        const isTokenExpired =
-          response.status === 401 &&
-          typeof message === 'string' &&
-          message.toLowerCase().includes('refresh');
+        // Auto-refresh token on 401 Unauthorized if not retried
+        const isAuthEndpoint =
+          endpoint.includes('/auth/login') ||
+          endpoint.includes('/auth/register') ||
+          endpoint.includes('/auth/refresh-token');
 
-        if (isTokenExpired && !_retry) {
-          const refreshSuccess = await this.performTokenRefresh();
-          if (refreshSuccess) {
-            return this.request<T>(endpoint, { ...options, _retry: true });
-          }
+        if (response.status === 401 && !isAuthEndpoint && !_retry) {
+          try {
+            const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+              method: 'POST',
+              credentials: 'include',
+              headers: { 'Content-Type': 'application/json' },
+            });
+            if (refreshRes.ok) {
+              return this.request<T>(endpoint, { ...options, _retry: true });
+            }
+          } catch {}
         }
 
         throw new ApiError(message, code, response.status, json);
