@@ -47,7 +47,22 @@ export class ApiClient {
       }
     }
 
-    const url = endpoint.startsWith('http') ? endpoint : `${API_BASE_URL}${endpoint}`;
+    let cleanEndpoint = endpoint.trim();
+    let url: string;
+    if (cleanEndpoint.startsWith('http://') || cleanEndpoint.startsWith('https://')) {
+      url = cleanEndpoint;
+    } else {
+      const normalizedBase = API_BASE_URL.replace(/\/+$/, '');
+      if (normalizedBase.endsWith('/api/v1') && cleanEndpoint.startsWith('/api/v1/')) {
+        cleanEndpoint = cleanEndpoint.substring('/api/v1'.length);
+      } else if (normalizedBase.endsWith('/api/v1') && cleanEndpoint === '/api/v1') {
+        cleanEndpoint = '';
+      }
+      if (!cleanEndpoint.startsWith('/') && cleanEndpoint.length > 0) {
+        cleanEndpoint = `/${cleanEndpoint}`;
+      }
+      url = `${normalizedBase}${cleanEndpoint}`;
+    }
 
     try {
       const response = await fetch(url, config);
@@ -69,7 +84,7 @@ export class ApiClient {
 
         if (response.status === 401 && !isAuthEndpoint && !_retry) {
           try {
-            const refreshRes = await fetch(`${API_BASE_URL}/auth/refresh-token`, {
+            const refreshRes = await fetch(`${API_BASE_URL.replace(/\/+$/, '')}/auth/refresh-token`, {
               method: 'POST',
               credentials: 'include',
               headers: { 'Content-Type': 'application/json' },
