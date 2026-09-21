@@ -132,7 +132,11 @@ export default function AdminBookingsPage() {
     }
   }, [actionMessage]);
 
-  const handleUpdateStatus = async (bookingId: string, status: string, note?: string) => {
+  const handleUpdateStatus = async (
+    bookingId: string,
+    status: 'CONTACTED' | 'CLOSED' | 'CANCELLED' | string,
+    note?: string
+  ) => {
     setActionLoading(true);
     setActionMessage(null);
     try {
@@ -363,7 +367,7 @@ export default function AdminBookingsPage() {
                       </td>
 
                       <td style={{ padding: '0.85rem 1rem', fontWeight: 700, color: '#0B2A4A' }}>
-                        {b.totalPrice !== undefined ? `${b.totalPrice.toLocaleString()} ${revenueCurrency}` : (b.room?.pricePerBed || b.room?.monthlyRent) ? `${Number(b.room.pricePerBed || b.room.monthlyRent).toLocaleString()} ${revenueCurrency}` : '—'}
+                        {b.totalPrice !== undefined ? `${b.totalPrice.toLocaleString()} ${revenueCurrency}` : '—'}
                       </td>
 
                       <td style={{ padding: '0.85rem 1rem' }}>

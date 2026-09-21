@@ -67,25 +67,35 @@ export interface AdminBookingItem {
     title?: string;
     address?: string;
     city?: string;
+    [key: string]: any;
   };
   roomId?: string;
   room?: {
     id?: string;
     roomNumber?: string;
     type?: string;
+    roomType?: string;
+    pricePerBed?: number;
+    monthlyRent?: number;
+    [key: string]: any;
   };
   tenantId?: string;
   tenant?: {
     id?: string;
     name?: string;
+    firstName?: string;
+    lastName?: string;
     email?: string;
     phone?: string;
+    [key: string]: any;
   };
   ownerId?: string;
   status: 'PENDING' | 'CONFIRMED' | 'CONTACTED' | 'CLOSED' | 'CANCELLED' | string;
   bedsRequested?: number;
   startDate?: string;
   endDate?: string;
+  moveInDate?: string;
+  moveOutDate?: string;
   totalPrice?: number;
   createdAt?: string;
   [key: string]: any;
@@ -322,7 +332,7 @@ export class AdminService {
    * PATCH /booking/:id/status
    * Changes booking status (CONTACTED, CLOSED, CANCELLED)
    */
-  static async updateBookingStatus(id: string, status: 'CONTACTED' | 'CLOSED' | 'CANCELLED', note?: string): Promise<any> {
+  static async updateBookingStatus(id: string, status: 'CONTACTED' | 'CLOSED' | 'CANCELLED' | string, note?: string): Promise<any> {
     const res = await ApiClient.patch<any>(`/booking/${id}/status`, { status, note });
     return res?.data || res;
   }

@@ -221,7 +221,7 @@ export default function OwnerBookingsPage() {
     });
   }, [propertyBookings, selectedStatusTab, searchTerm]);
 
-  // Status counts from current bookings
+  // Status counts from current bookings or backend status breakdown
   const statusCounts = useMemo(() => {
     const counts = { ALL: propertyBookings.length, PENDING: 0, CONTACTED: 0, CLOSED: 0, CANCELLED: 0 };
     for (const b of propertyBookings) {
@@ -231,8 +231,15 @@ export default function OwnerBookingsPage() {
       else if (s === 'CLOSED' || s === 'CONFIRMED') counts.CLOSED++;
       else if (s === 'CANCELLED') counts.CANCELLED++;
     }
+    if (counts.ALL === 0 && bookingStatusData && typeof bookingStatusData === 'object') {
+      counts.PENDING = Number(bookingStatusData.PENDING ?? bookingStatusData.pending ?? 0);
+      counts.CONTACTED = Number(bookingStatusData.CONTACTED ?? bookingStatusData.contacted ?? 0);
+      counts.CLOSED = Number(bookingStatusData.CLOSED ?? bookingStatusData.closed ?? bookingStatusData.CONFIRMED ?? bookingStatusData.confirmed ?? 0);
+      counts.CANCELLED = Number(bookingStatusData.CANCELLED ?? bookingStatusData.cancelled ?? 0);
+      counts.ALL = Number(bookingStatusData.ALL ?? bookingStatusData.total ?? (counts.PENDING + counts.CONTACTED + counts.CLOSED + counts.CANCELLED));
+    }
     return counts;
-  }, [propertyBookings]);
+  }, [propertyBookings, bookingStatusData]);
 
   function getStatusBadge(status?: string) {
     const s = (status || '').toUpperCase();

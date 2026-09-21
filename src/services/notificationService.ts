@@ -2,17 +2,20 @@ import { ApiClient } from './apiClient';
 
 export interface NotificationItem {
   id: string;
-  userId: string;
-  event: string;
-  channel: string;
-  title: string;
-  body: string;
+  userId?: string;
+  event?: string;
+  channel?: string;
+  title?: string;
+  body?: string;
+  message?: string;
+  content?: string;
   payload?: any;
   relatedEntityType?: string | null;
   relatedEntityId?: string | null;
-  isRead: boolean;
+  isRead?: boolean;
+  read?: boolean;
   readAt?: string | null;
-  createdAt: string;
+  createdAt?: string;
   [key: string]: any;
 }
 

@@ -108,7 +108,8 @@ export class OwnerService {
    * Returns owner calendar summary
    */
   static async getCalendarSummary(params?: { days?: number }): Promise<any> {
-    const res = await ApiClient.get<any>('/dashboard/owner/calendar/summary', { params });
+    const query = params?.days ? `?days=${params.days}` : '';
+    const res = await ApiClient.get<any>(`/dashboard/owner/calendar/summary${query}`);
     return res?.data?.data ?? res?.data ?? res;
   }
 
