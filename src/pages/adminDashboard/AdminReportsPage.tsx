@@ -71,14 +71,15 @@ export default function AdminReportsPage() {
   }, [fetchReports]);
 
   // Handle Priority Change
-  const handleUpdatePriority = async (reportId: string, priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT') => {
+  const handleUpdatePriority = async (reportId: string, priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | string) => {
     setUpdatingPriorityId(reportId);
     setActionMessage(null);
     try {
-      await AdminService.updateReportPriority(reportId, priority);
+      const norm = priority.toLowerCase() === 'urgent' ? 'high' : priority.toLowerCase();
+      await AdminService.updateReportPriority(reportId, norm);
       setActionMessage({
         type: 'success',
-        text: locale === 'ar' ? `تم تغيير أولوية البلاغ إلى ${priority}.` : `Report priority updated to ${priority}.`,
+        text: locale === 'ar' ? `تم تغيير أولوية البلاغ إلى ${priority.toUpperCase()}.` : `Report priority updated to ${priority.toUpperCase()}.`,
       });
       fetchReports();
     } catch (err: any) {
@@ -98,7 +99,8 @@ export default function AdminReportsPage() {
     setIsSubmittingResolve(true);
     setActionMessage(null);
     try {
-      await AdminService.resolveReport(resolvingReport.id, resolutionNotes.trim() || undefined);
+      const notes = resolutionNotes.trim() || (locale === 'ar' ? 'تمت المراجعة والتسوية بنجاح بواسطة الإدارة' : 'Resolved by administrator');
+      await AdminService.resolveReport(resolvingReport.id, notes);
       setActionMessage({
         type: 'success',
         text: locale === 'ar' ? 'تم إغلاق البلاغ وحله بنجاح.' : 'Report resolved successfully.',
@@ -120,12 +122,32 @@ export default function AdminReportsPage() {
 
   const normalizeStatusList = (raw: any): AdminStatusCount[] => {
     if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    if (typeof raw === 'object') {
-      return Object.entries(raw).map(([key, val]) => ({
-        status: key,
-        count: typeof val === 'number' ? val : Number((val as any)?.count || 0),
-      }));
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (Array.isArray(unwrapped)) {
+      return unwrapped
+        .filter((item) => item && item.status && String(item.status).toLowerCase() !== 'total')
+        .map((item) => ({
+          status: String(item.status).toUpperCase(),
+          count: typeof item.count === 'number' ? item.count : Number(item.count || 0),
+        }));
+    }
+
+    if (typeof unwrapped === 'object') {
+      return Object.entries(unwrapped)
+        .filter(([key, val]) => {
+          const lower = key.toLowerCase();
+          return lower !== 'total' && lower !== 'totalproperties' && typeof val === 'number';
+        })
+        .map(([key, val]) => ({
+          status: key.toUpperCase(),
+          count: Number(val || 0),
+        }));
     }
     return [];
   };
@@ -274,6 +296,21 @@ export default function AdminReportsPage() {
                     const isBusy = updatingPriorityId === r.id;
                     const isResolved = r.status === 'RESOLVED' || r.status === 'DISMISSED';
 
+                    const title =
+                      r.title ||
+                      (r.reportedProperty?.title
+                        ? `${locale === 'ar' ? 'عقار: ' : 'Property: '}${r.reportedProperty.title}`
+                        : r.description
+                        ? r.description.substring(0, 50) + (r.description.length > 50 ? '...' : '')
+                        : `${locale === 'ar' ? 'بلاغ ' : 'Report '}${r.reportedType || ''}`);
+
+                    const reporter =
+                      r.reporter?.firstName
+                        ? `${r.reporter.firstName} ${r.reporter.lastName || ''}`.trim()
+                        : r.reporter?.email || r.reportedBy?.name || r.reportedBy?.email || '—';
+
+                    const rawPriority = (r.priority || 'medium').toUpperCase();
+
                     return (
                       <tr key={r.id} style={{ borderBottom: '1px solid #F1F5F9' }}>
                         <td style={{ padding: '0.85rem 1rem', color: '#64748B', fontSize: '0.85rem' }}>
@@ -291,13 +328,13 @@ export default function AdminReportsPage() {
                               color: '#2F6BFF',
                             }}
                           >
-                            {r.targetType || 'PROPERTY'}
+                            {r.reportedType ? r.reportedType.toUpperCase() : (r.targetType || 'PROPERTY')}
                           </span>
                         </td>
 
                         <td style={{ padding: '0.85rem 1rem' }}>
                           <div style={{ fontWeight: 600, color: '#0B2A4A' }}>
-                            {r.title || r.reason || (locale === 'ar' ? 'بلاغ بدون عنوان' : 'Untitled')}
+                            {title}
                           </div>
                           {r.description && (
                             <div style={{ fontSize: '0.8rem', color: '#64748B', maxWidth: '360px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -309,23 +346,23 @@ export default function AdminReportsPage() {
                         <td style={{ padding: '0.85rem 1rem' }}>
                           <select
                             disabled={isBusy || isResolved}
-                            value={r.priority || 'MEDIUM'}
-                            onChange={(e) => handleUpdatePriority(r.id, e.target.value as any)}
+                            value={rawPriority}
+                            onChange={(e) => handleUpdatePriority(r.id, e.target.value)}
                             style={{
                               padding: '0.25rem 0.5rem',
                               borderRadius: '6px',
                               fontSize: '0.78rem',
                               fontWeight: 700,
                               backgroundColor:
-                                r.priority === 'URGENT' || r.priority === 'HIGH'
+                                rawPriority === 'URGENT' || rawPriority === 'HIGH'
                                   ? '#FEE2E2'
-                                  : r.priority === 'MEDIUM'
+                                  : rawPriority === 'MEDIUM'
                                   ? '#FEF9C3'
                                   : '#F1F5F9',
                               color:
-                                r.priority === 'URGENT' || r.priority === 'HIGH'
+                                rawPriority === 'URGENT' || rawPriority === 'HIGH'
                                   ? '#DC2626'
-                                  : r.priority === 'MEDIUM'
+                                  : rawPriority === 'MEDIUM'
                                   ? '#CA8A04'
                                   : '#475569',
                               border: '1px solid #CBD5E1',
@@ -355,7 +392,7 @@ export default function AdminReportsPage() {
                         </td>
 
                         <td style={{ padding: '0.85rem 1rem', color: '#475569', fontSize: '0.85rem' }}>
-                          {r.reportedBy?.name || r.reportedBy?.email || '—'}
+                          {reporter}
                         </td>
 
                         <td style={{ padding: '0.85rem 1rem' }}>

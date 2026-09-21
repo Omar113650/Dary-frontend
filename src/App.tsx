@@ -23,6 +23,7 @@ import OwnerBookingsPage from './pages/ownerDashboard/OwnerBookingsPage';
 import OwnerRevenuePage from './pages/ownerDashboard/OwnerRevenuePage';
 import OwnerCalendarPage from './pages/ownerDashboard/OwnerCalendarPage';
 import OwnerProfilePage from './pages/ownerDashboard/OwnerProfilePage';
+import AddPropertyPage from './pages/ownerDashboard/AddPropertyPage';
 import DevOwnerDashboardPreview from './components/ownerDashboard/DevOwnerDashboardPreview';
 import AdminRoute from './components/auth/AdminRoute';
 import AdminDashboardLayout from './components/adminDashboard/AdminDashboardLayout';
@@ -113,9 +114,12 @@ export default function App() {
             >
               <Route index element={<OwnerOverviewPage />} />
               <Route path="properties" element={<OwnerPropertiesPage />} />
+              <Route path="properties/new" element={<AddPropertyPage />} />
+              <Route path="add-property" element={<AddPropertyPage />} />
               <Route path="bookings" element={<OwnerBookingsPage />} />
               <Route path="revenue" element={<OwnerRevenuePage />} />
               <Route path="calendar" element={<OwnerCalendarPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<OwnerProfilePage />} />
             </Route>
 
@@ -124,9 +128,12 @@ export default function App() {
               <Route path="/owner-dashboard-preview" element={<DevOwnerDashboardPreview />}>
                 <Route index element={<OwnerOverviewPage />} />
                 <Route path="properties" element={<OwnerPropertiesPage />} />
+                <Route path="properties/new" element={<AddPropertyPage />} />
+                <Route path="add-property" element={<AddPropertyPage />} />
                 <Route path="bookings" element={<OwnerBookingsPage />} />
                 <Route path="revenue" element={<OwnerRevenuePage />} />
                 <Route path="calendar" element={<OwnerCalendarPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="profile" element={<OwnerProfilePage />} />
               </Route>
             )}
@@ -147,6 +154,7 @@ export default function App() {
               <Route path="reports" element={<AdminReportsPage />} />
               <Route path="analytics" element={<AdminAnalyticsPage />} />
               <Route path="calendar" element={<AdminCalendarPage />} />
+              <Route path="notifications" element={<NotificationsPage />} />
               <Route path="profile" element={<AdminProfilePage />} />
             </Route>
 
@@ -160,6 +168,7 @@ export default function App() {
                 <Route path="reports" element={<AdminReportsPage />} />
                 <Route path="analytics" element={<AdminAnalyticsPage />} />
                 <Route path="calendar" element={<AdminCalendarPage />} />
+                <Route path="notifications" element={<NotificationsPage />} />
                 <Route path="profile" element={<AdminProfilePage />} />
               </Route>
             )}

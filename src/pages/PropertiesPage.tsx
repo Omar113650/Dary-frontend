@@ -15,35 +15,38 @@ interface PriceRangeOption {
 
 const priceRanges: PriceRangeOption[] = [
   { value: '', label: { ar: 'جميع الأسعار', en: 'All Prices' }, min: undefined, max: undefined },
-  { value: 'under-2000', label: { ar: 'أقل من 2,000 د.إ', en: 'Under 2,000 AED' }, min: undefined, max: 2000 },
-  { value: '2000-4000', label: { ar: '2,000 - 4,000 د.إ', en: '2,000 - 4,000 AED' }, min: 2000, max: 4000 },
-  { value: '4000-6000', label: { ar: '4,000 - 6,000 د.إ', en: '4,000 - 6,000 AED' }, min: 4000, max: 6000 },
-  { value: 'over-6000', label: { ar: 'أكثر من 6,000 د.إ', en: 'Over 6,000 AED' }, min: 6000, max: undefined },
+  { value: 'under-1500', label: { ar: 'أقل من 1,500 ج.م', en: 'Under 1,500 EGP' }, min: undefined, max: 1500 },
+  { value: '1500-3000', label: { ar: '1,500 - 3,000 ج.م', en: '1,500 - 3,000 EGP' }, min: 1500, max: 3000 },
+  { value: '3000-5000', label: { ar: '3,000 - 5,000 ج.م', en: '3,000 - 5,000 EGP' }, min: 3000, max: 5000 },
+  { value: 'over-5000', label: { ar: 'أكثر من 5,000 ج.م', en: 'Over 5,000 EGP' }, min: 5000, max: undefined },
 ];
 
 const cityOptions = [
-  { value: '', label: { ar: 'جميع المواقع', en: 'All Locations' } },
-  { value: 'dubai', label: { ar: 'دبي', en: 'Dubai' } },
-  { value: 'sharjah', label: { ar: 'الشارقة', en: 'Sharjah' } },
-  { value: 'abu-dhabi', label: { ar: 'أبوظبي', en: 'Abu Dhabi' } },
-  { value: 'ajman', label: { ar: 'عجمان', en: 'Ajman' } },
-  { value: 'cairo', label: { ar: 'القاهرة', en: 'Cairo' } },
-  { value: 'mansoura', label: { ar: 'المنصورة', en: 'Mansoura' } },
+  { value: '', label: { ar: 'جميع المحافظات / المدن', en: 'All Locations' } },
+  { value: 'cairo', label: { ar: 'القاهرة (جامعة القاهرة / عين شمس)', en: 'Cairo' } },
+  { value: 'giza', label: { ar: 'الجيزة / الدقي', en: 'Giza / Dokki' } },
+  { value: 'mansoura', label: { ar: 'المنصورة (جامعة المنصورة)', en: 'Mansoura' } },
+  { value: 'alexandria', label: { ar: 'الإسكندرية (جامعة الإسكندرية)', en: 'Alexandria' } },
+  { value: 'tanta', label: { ar: 'طنطا (جامعة طنطا)', en: 'Tanta' } },
+  { value: 'zagazig', label: { ar: 'الزقازيق', en: 'Zagazig' } },
+  { value: 'assiut', label: { ar: 'أسيوط', en: 'Assiut' } },
+  { value: 'october', label: { ar: '6 أكتوبر (جامعة MSA / MUST)', en: '6th of October' } },
 ];
 
 const typeOptions = [
-  { value: '', label: { ar: 'جميع الأنواع', en: 'All Types' } },
-  { value: 'apartment', label: { ar: 'شقة', en: 'Apartment' } },
-  { value: 'studio', label: { ar: 'استوديو', en: 'Studio' } },
-  { value: 'room', label: { ar: 'غرفة', en: 'Room' } },
-  { value: 'dormitory', label: { ar: 'سكن طلابي', en: 'Dormitory' } },
+  { value: '', label: { ar: 'جميع أنواع السكن', en: 'All Housing Types' } },
+  { value: 'shared_apartment', label: { ar: 'شقة مشتركة (Shared Apartment)', en: 'Shared Apartment' } },
+  { value: 'private_room', label: { ar: 'غرفة خاصة (Private Room)', en: 'Private Room' } },
+  { value: 'shared_room', label: { ar: 'غرفة مشتركة (Shared Room)', en: 'Shared Room' } },
+  { value: 'studio', label: { ar: 'استوديو (Studio)', en: 'Studio' } },
+  { value: 'entire_apartment', label: { ar: 'شقة كاملة (Entire Apartment)', en: 'Entire Apartment' } },
 ];
 
 const bedroomOptions = [
-  { value: '', label: { ar: 'أي عدد', en: 'Any' } },
-  { value: '1', label: { ar: 'غرفة واحدة', en: '1 Bedroom' } },
-  { value: '2', label: { ar: 'غرفتان', en: '2 Bedrooms' } },
-  { value: '3', label: { ar: '3 غرف أو أكثر', en: '3+ Bedrooms' } },
+  { value: '', label: { ar: 'أي عدد غرف', en: 'Any Rooms' } },
+  { value: '1', label: { ar: 'غرفة واحدة', en: '1 Room' } },
+  { value: '2', label: { ar: 'غرفتان', en: '2 Rooms' } },
+  { value: '3', label: { ar: '3 غرف أو أكثر', en: '3+ Rooms' } },
 ];
 
 export default function PropertiesPage() {

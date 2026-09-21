@@ -10,6 +10,14 @@ export default function SavedSearchesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (actionMessage) {
+      const timer = setTimeout(() => setActionMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionMessage]);
 
   const fetchSearches = useCallback(async () => {
     setLoading(true);
@@ -18,7 +26,7 @@ export default function SavedSearchesPage() {
       const data = await TenantService.getSavedSearches();
       setSearches(data);
     } catch (err: any) {
-      console.error('[SavedSearchesPage] GET failed:', err);
+      console.error('[SavedSearchesPage] GET /saved-searches failed:', err);
       setError(
         err?.message ||
           (locale === 'ar'
@@ -36,12 +44,20 @@ export default function SavedSearchesPage() {
 
   async function handleDelete(id: string) {
     setDeletingId(id);
+    setActionMessage(null);
     try {
       await TenantService.deleteSavedSearch(id);
       setSearches((prev) => prev.filter((s) => s.id !== id));
+      setActionMessage({
+        type: 'success',
+        text: locale === 'ar' ? 'تم حذف البحث المحفوظ.' : 'Saved search deleted.',
+      });
     } catch (err: any) {
       console.error('[SavedSearchesPage] Delete error:', err);
-      alert(err?.message || (locale === 'ar' ? 'فشل حذف البحث' : 'Failed to delete saved search'));
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشل حذف البحث' : 'Failed to delete saved search'),
+      });
     } finally {
       setDeletingId(null);
     }
@@ -49,6 +65,33 @@ export default function SavedSearchesPage() {
 
   return (
     <div>
+      {actionMessage && (
+        <div
+          style={{
+            marginBottom: '1rem',
+            padding: '0.75rem 1.25rem',
+            borderRadius: '10px',
+            backgroundColor: actionMessage.type === 'success' ? '#DEF7EC' : '#FDE8E8',
+            color: actionMessage.type === 'success' ? '#03543F' : '#9B1C1C',
+            border: `1px solid ${actionMessage.type === 'success' ? '#31C48D' : '#F98080'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+          }}
+        >
+          <span>{actionMessage.type === 'success' ? '✓ ' : '✕ '}{actionMessage.text}</span>
+          <button
+            type="button"
+            onClick={() => setActionMessage(null)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700 }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="dary-section-card">
         <div className="dary-section-header">
           <div>

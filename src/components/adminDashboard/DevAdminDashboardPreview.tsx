@@ -37,7 +37,7 @@ export default function DevAdminDashboardPreview() {
     isAdmin: true,
     login: async () => null,
     logout: async () => {
-      alert('وضع المعاينة: تم استدعاء تسجيل الخروج (Development Preview Logout)');
+      console.info('وضع المعاينة: تم استدعاء تسجيل الخروج (Development Preview Logout)');
     },
     refreshUser: async () => {},
   };

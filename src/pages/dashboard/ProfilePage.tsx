@@ -111,7 +111,7 @@ export default function ProfilePage() {
 
     // Reject > 10MB client-side
     if (file.size > 10 * 1024 * 1024) {
-      alert(locale === 'ar' ? 'حجم الصورة يجب ألا يتجاوز 10 ميغابايت' : 'Avatar image must not exceed 10 MB');
+      setError(locale === 'ar' ? 'حجم الصورة يجب ألا يتجاوز 10 ميغابايت' : 'Avatar image must not exceed 10 MB');
       return;
     }
 

@@ -44,4 +44,11 @@ export class ProfileService {
   static async deleteAvatar(): Promise<any> {
     return ApiClient.delete<any>('/profile/avatar');
   }
+
+  /**
+   * Fetches public profile for a specific user via GET /profile/:userId.
+   */
+  static async getPublicProfile(userId: string): Promise<any> {
+    return ApiClient.get<any>(`/profile/${userId}`);
+  }
 }

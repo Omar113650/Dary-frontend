@@ -160,11 +160,20 @@ export default function LoginPage() {
         }
       }
 
-      if (err?.status === 401) {
+      if (
+        errMsg.includes('invalidcredentials') ||
+        errMsg.includes('invalid credentials') ||
+        errMsg.includes('invalid_credentials') ||
+        errMsg.includes('invalid password') ||
+        errMsg.includes('wrong password') ||
+        errMsg.includes('user not found') ||
+        errMsg.includes('incorrect') ||
+        err?.status === 401
+      ) {
         setErrorMsg(
           locale === 'ar'
-            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة.'
-            : 'Invalid email or password.'
+            ? 'البريد الإلكتروني أو كلمة المرور غير صحيحة. يرجى التأكد من البيانات والمحاولة مجدداً.'
+            : 'Invalid email or password. Please check your credentials and try again.'
         );
         return;
       }

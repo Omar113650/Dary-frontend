@@ -172,17 +172,59 @@ export default function AdminOverviewPage() {
   // Safe Parsers
   const normalizeStatusList = (raw: any): AdminStatusCount[] => {
     if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    if (Array.isArray(raw.statuses)) return raw.statuses;
-    if (Array.isArray(raw.status)) return raw.status;
-    if (Array.isArray(raw.data)) return raw.data;
-    if (typeof raw === 'object') {
-      return Object.entries(raw).map(([key, val]) => ({
-        status: key,
-        count: typeof val === 'number' ? val : Number((val as any)?.count || 0),
-      }));
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (Array.isArray(unwrapped)) {
+      return unwrapped
+        .filter((item) => item && item.status && String(item.status).toLowerCase() !== 'total')
+        .map((item) => ({
+          status: String(item.status).toUpperCase(),
+          count: typeof item.count === 'number' ? item.count : Number(item.count || 0),
+        }));
+    }
+
+    if (typeof unwrapped === 'object') {
+      return Object.entries(unwrapped)
+        .filter(([key, val]) => {
+          const lower = key.toLowerCase();
+          return lower !== 'total' && lower !== 'totalproperties' && typeof val === 'number';
+        })
+        .map(([key, val]) => ({
+          status: key.toUpperCase(),
+          count: Number(val || 0),
+        }));
     }
     return [];
+  };
+
+  const extractTotal = (raw: any, list: AdminStatusCount[]): number => {
+    if (typeof raw === 'number') return raw;
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (typeof unwrapped?.total === 'number') return unwrapped.total;
+    if (typeof unwrapped?.totalProperties === 'number') return unwrapped.totalProperties;
+
+    // Avoid double counting if status + roles are in the same object
+    if (unwrapped && (unwrapped.active !== undefined || unwrapped.inactive !== undefined)) {
+      return (
+        (Number(unwrapped.active) || 0) +
+        (Number(unwrapped.inactive) || 0) +
+        (Number(unwrapped.pending) || 0) +
+        (Number(unwrapped.suspended) || 0)
+      );
+    }
+
+    return list.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
   };
 
   const usersStatusList = normalizeStatusList(usersStatus);
@@ -190,10 +232,10 @@ export default function AdminOverviewPage() {
   const bookingsStatusList = normalizeStatusList(bookingsStatus);
   const reportsStatusList = normalizeStatusList(reportsStatus);
 
-  const totalUsers = usersStatusList.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const totalProps = propsStatusList.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const totalBookings = bookingsStatusList.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
-  const totalReports = reportsStatusList.reduce((sum, item) => sum + (Number(item.count) || 0), 0);
+  const totalUsers = extractTotal(usersStatus, usersStatusList);
+  const totalProps = extractTotal(propertiesStatus, propsStatusList);
+  const totalBookings = extractTotal(bookingsStatus, bookingsStatusList);
+  const totalReports = extractTotal(reportsStatus, reportsStatusList);
 
   const parsedRevenue =
     revenueData?.totalRevenue ??
@@ -542,76 +584,93 @@ export default function AdminOverviewPage() {
                 </tr>
               </thead>
               <tbody>
-                {recentReports.map((report, idx) => (
-                  <tr key={report.id || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
-                    <td style={{ padding: '0.75rem', color: '#64748B', fontSize: '0.85rem' }}>
-                      {report.id ? report.id.substring(0, 8) : `#${idx + 1}`}
-                    </td>
-                    <td style={{ padding: '0.75rem', fontWeight: 600, color: '#0B2A4A' }}>
-                      {report.title || report.reason || (locale === 'ar' ? 'بلاغ بدون عنوان' : 'Untitled Report')}
-                    </td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span
-                        style={{
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          backgroundColor:
-                            report.priority === 'URGENT' || report.priority === 'HIGH'
-                              ? '#FEE2E2'
-                              : report.priority === 'MEDIUM'
-                              ? '#FEF9C3'
-                              : '#F1F5F9',
-                          color:
-                            report.priority === 'URGENT' || report.priority === 'HIGH'
-                              ? '#DC2626'
-                              : report.priority === 'MEDIUM'
-                              ? '#CA8A04'
-                              : '#475569',
-                        }}
-                      >
-                        {report.priority || 'NORMAL'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <span
-                        style={{
-                          padding: '0.2rem 0.55rem',
-                          borderRadius: '6px',
-                          fontSize: '0.75rem',
-                          fontWeight: 700,
-                          backgroundColor: report.status === 'RESOLVED' ? '#DCFCE7' : '#FEF9C3',
-                          color: report.status === 'RESOLVED' ? '#15803D' : '#A16207',
-                        }}
-                      >
-                        {report.status || 'PENDING'}
-                      </span>
-                    </td>
-                    <td style={{ padding: '0.75rem', color: '#475569', fontSize: '0.85rem' }}>
-                      {report.reportedBy?.name || report.reportedBy?.email || '—'}
-                    </td>
-                    <td style={{ padding: '0.75rem', color: '#64748B', fontSize: '0.82rem' }}>
-                      {report.createdAt ? new Date(report.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US') : '—'}
-                    </td>
-                    <td style={{ padding: '0.75rem' }}>
-                      <Link
-                        to={`${basePath}/reports`}
-                        style={{
-                          padding: '0.35rem 0.75rem',
-                          borderRadius: '6px',
-                          backgroundColor: '#0B2A4A',
-                          color: '#FFFFFF',
-                          textDecoration: 'none',
-                          fontSize: '0.8rem',
-                          fontWeight: 600,
-                        }}
-                      >
-                        {locale === 'ar' ? 'معالجة' : 'Triage'}
-                      </Link>
-                    </td>
-                  </tr>
-                ))}
+                {recentReports.map((report, idx) => {
+                  const title =
+                    report.title ||
+                    (report.reportedProperty?.title
+                      ? `${locale === 'ar' ? 'عقار: ' : 'Property: '}${report.reportedProperty.title}`
+                      : report.description
+                      ? report.description.substring(0, 45) + (report.description.length > 45 ? '...' : '')
+                      : `${locale === 'ar' ? 'بلاغ ' : 'Report '}${report.reportedType || ''}`);
+
+                  const reporter =
+                    report.reporter?.firstName
+                      ? `${report.reporter.firstName} ${report.reporter.lastName || ''}`.trim()
+                      : report.reporter?.email || report.reportedBy?.name || report.reportedBy?.email || '—';
+
+                  const rawPriority = (report.priority || 'medium').toUpperCase();
+
+                  return (
+                    <tr key={report.id || idx} style={{ borderBottom: '1px solid #F1F5F9' }}>
+                      <td style={{ padding: '0.75rem', color: '#64748B', fontSize: '0.85rem' }}>
+                        {report.id ? report.id.substring(0, 8) : `#${idx + 1}`}
+                      </td>
+                      <td style={{ padding: '0.75rem', fontWeight: 600, color: '#0B2A4A' }}>
+                        {title}
+                      </td>
+                      <td style={{ padding: '0.75rem' }}>
+                        <span
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            backgroundColor:
+                              rawPriority === 'URGENT' || rawPriority === 'HIGH'
+                                ? '#FEE2E2'
+                                : rawPriority === 'MEDIUM'
+                                ? '#FEF9C3'
+                                : '#F1F5F9',
+                            color:
+                              rawPriority === 'URGENT' || rawPriority === 'HIGH'
+                                ? '#DC2626'
+                                : rawPriority === 'MEDIUM'
+                                ? '#CA8A04'
+                                : '#475569',
+                          }}
+                        >
+                          {rawPriority}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.75rem' }}>
+                        <span
+                          style={{
+                            padding: '0.2rem 0.55rem',
+                            borderRadius: '6px',
+                            fontSize: '0.75rem',
+                            fontWeight: 700,
+                            backgroundColor: report.status === 'RESOLVED' ? '#DCFCE7' : '#FEF9C3',
+                            color: report.status === 'RESOLVED' ? '#15803D' : '#A16207',
+                          }}
+                        >
+                          {report.status || 'PENDING'}
+                        </span>
+                      </td>
+                      <td style={{ padding: '0.75rem', color: '#475569', fontSize: '0.85rem' }}>
+                        {reporter}
+                      </td>
+                      <td style={{ padding: '0.75rem', color: '#64748B', fontSize: '0.82rem' }}>
+                        {report.createdAt ? new Date(report.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US') : '—'}
+                      </td>
+                      <td style={{ padding: '0.75rem' }}>
+                        <Link
+                          to={`${basePath}/reports`}
+                          style={{
+                            padding: '0.35rem 0.75rem',
+                            borderRadius: '6px',
+                            backgroundColor: '#0B2A4A',
+                            color: '#FFFFFF',
+                            textDecoration: 'none',
+                            fontSize: '0.8rem',
+                            fontWeight: 600,
+                          }}
+                        >
+                          {locale === 'ar' ? 'معالجة' : 'Triage'}
+                        </Link>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>

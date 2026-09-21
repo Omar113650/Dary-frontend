@@ -129,7 +129,7 @@ export class AdminService {
    */
   static async getReportsStatus(): Promise<any> {
     const res = await ApiClient.get<any>('/dashboard/reports/status');
-    return res?.data || res;
+    return res?.data?.status ?? res?.data?.data?.status ?? res?.data ?? res;
   }
 
   /**
@@ -141,14 +141,15 @@ export class AdminService {
     if (params?.limit) query.append('limit', params.limit.toString());
     const queryStr = query.toString() ? `?${query.toString()}` : '';
     const res = await ApiClient.get<any>(`/dashboard/reports${queryStr}`);
-    return res?.data || res;
+    return res?.data?.data ?? res?.data ?? res;
   }
 
   /**
    * PATCH /report/:id/priority
    */
-  static async updateReportPriority(id: string, priority: 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT'): Promise<any> {
-    const res = await ApiClient.patch<any>(`/report/${id}/priority`, { priority });
+  static async updateReportPriority(id: string, priority: 'low' | 'medium' | 'high' | 'urgent' | 'LOW' | 'MEDIUM' | 'HIGH' | 'URGENT' | string): Promise<any> {
+    const norm = priority.toLowerCase() === 'urgent' ? 'high' : priority.toLowerCase();
+    const res = await ApiClient.patch<any>(`/report/${id}/priority`, { priority: norm });
     return res?.data || res;
   }
 
@@ -156,7 +157,8 @@ export class AdminService {
    * PATCH /report/:id/resolve
    */
   static async resolveReport(id: string, resolutionNotes?: string): Promise<any> {
-    const res = await ApiClient.patch<any>(`/report/${id}/resolve`, { resolutionNotes });
+    const notes = resolutionNotes && resolutionNotes.trim().length > 0 ? resolutionNotes.trim() : 'تمت المراجعة والتسوية بنجاح';
+    const res = await ApiClient.patch<any>(`/report/${id}/resolve`, { resolutionNotes: notes });
     return res?.data || res;
   }
 
@@ -165,7 +167,7 @@ export class AdminService {
    */
   static async getAnalytics(range: string = '7d'): Promise<any> {
     const res = await ApiClient.get<any>(`/dashboard/analytics?range=${encodeURIComponent(range)}`);
-    return res?.data || res;
+    return res?.data?.data ?? res?.data ?? res;
   }
 
   /**
@@ -173,7 +175,7 @@ export class AdminService {
    */
   static async getBookingsStatus(): Promise<any> {
     const res = await ApiClient.get<any>('/dashboard/bookings/status');
-    return res?.data || res;
+    return res?.data?.status ?? res?.data?.data?.status ?? res?.data ?? res;
   }
 
   /**
@@ -181,7 +183,7 @@ export class AdminService {
    */
   static async getBookingsRevenue(): Promise<any> {
     const res = await ApiClient.get<any>('/dashboard/bookings/revenue');
-    return res?.data || res;
+    return res?.data?.data ?? res?.data ?? res;
   }
 
   /**
@@ -193,7 +195,7 @@ export class AdminService {
     if (params?.limit) query.append('limit', params.limit.toString());
     const queryStr = query.toString() ? `?${query.toString()}` : '';
     const res = await ApiClient.get<any>(`/dashboard/bookings${queryStr}`);
-    return res?.data || res;
+    return res?.data?.data ?? res?.data ?? res;
   }
 
   /**
@@ -201,7 +203,7 @@ export class AdminService {
    */
   static async getPropertiesStatus(): Promise<any> {
     const res = await ApiClient.get<any>('/dashboard/properties/status');
-    return res?.data || res;
+    return res?.data?.status ?? res?.data?.data?.status ?? res?.data ?? res;
   }
 
   /**
@@ -213,7 +215,7 @@ export class AdminService {
     if (params?.limit) query.append('limit', params.limit.toString());
     const queryStr = query.toString() ? `?${query.toString()}` : '';
     const res = await ApiClient.get<any>(`/dashboard/properties${queryStr}`);
-    return res?.data || res;
+    return res?.data?.data ?? res?.data ?? res;
   }
 
   /**
@@ -221,7 +223,7 @@ export class AdminService {
    */
   static async getUsersStatus(): Promise<any> {
     const res = await ApiClient.get<any>('/dashboard/users/status');
-    return res?.data || res;
+    return res?.data?.status ?? res?.data?.data?.status ?? res?.data ?? res;
   }
 
   /**
@@ -246,7 +248,7 @@ export class AdminService {
     if (params?.limit) query.append('limit', params.limit.toString());
     const queryStr = query.toString() ? `?${query.toString()}` : '';
     const res = await ApiClient.get<any>(`/dashboard/users${queryStr}`);
-    return res?.data || res;
+    return res?.data?.data ?? res?.data ?? res;
   }
 
   /**
@@ -274,7 +276,7 @@ export class AdminService {
     if (endDate) query.append('endDate', endDate);
     const queryStr = query.toString() ? `?${query.toString()}` : '';
     const res = await ApiClient.get<any>(`/dashboard/booking/calendar${queryStr}`);
-    return res?.data || res;
+    return res?.data?.bookings?.bookings ?? res?.data?.bookings ?? res?.data?.data ?? res?.data ?? res;
   }
 
   /**
@@ -286,6 +288,52 @@ export class AdminService {
     if (roomId) query.append('roomId', roomId);
     const queryStr = query.toString() ? `?${query.toString()}` : '';
     const res = await ApiClient.get<any>(`/dashboard/calendar/summary${queryStr}`);
+    return res?.data?.data ?? res?.data ?? res;
+  }
+
+  /**
+   * PATCH /properties/:id/review
+   * Approves or rejects a property listing
+   */
+  static async reviewProperty(id: string, status: 'APPROVED' | 'REJECTED', rejectionReason?: string): Promise<any> {
+    const res = await ApiClient.patch<any>(`/properties/${id}/review`, { status, rejectionReason });
+    return res?.data || res;
+  }
+
+  /**
+   * PATCH /properties/:id/suspend
+   * Suspends a property listing
+   */
+  static async suspendProperty(id: string, reason?: string): Promise<any> {
+    const res = await ApiClient.patch<any>(`/properties/${id}/suspend`, { reason });
+    return res?.data || res;
+  }
+
+  /**
+   * PATCH /properties/:id/availability
+   * Toggles property availability
+   */
+  static async togglePropertyAvailability(id: string): Promise<any> {
+    const res = await ApiClient.patch<any>(`/properties/${id}/availability`);
+    return res?.data || res;
+  }
+
+  /**
+   * PATCH /booking/:id/status
+   * Changes booking status (CONTACTED, CLOSED, CANCELLED)
+   */
+  static async updateBookingStatus(id: string, status: 'CONTACTED' | 'CLOSED' | 'CANCELLED', note?: string): Promise<any> {
+    const res = await ApiClient.patch<any>(`/booking/${id}/status`, { status, note });
+    return res?.data || res;
+  }
+
+  /**
+   * PATCH /booking/:id/assign
+   * Assigns booking to current admin
+   */
+  static async assignBooking(id: string): Promise<any> {
+    const res = await ApiClient.patch<any>(`/booking/${id}/assign`);
     return res?.data || res;
   }
 }
+

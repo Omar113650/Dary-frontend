@@ -3,6 +3,8 @@ import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLocale } from '../../utils/LocaleContext';
 import { TenantService } from '../../services/tenantService';
+import { propertyService } from '../../services/propertyService';
+import type { Property } from '../../types/property';
 import type {
   RentalBooking,
   FavoriteItem,
@@ -22,6 +24,9 @@ export default function DashboardOverviewPage() {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const [savedSearches, setSavedSearches] = useState<SavedSearchItem[]>([]);
   const [unreadNotifications, setUnreadNotifications] = useState<number>(0);
+
+  const [featuredProperties, setFeaturedProperties] = useState<Property[]>([]);
+  const [loadingProperties, setLoadingProperties] = useState<boolean>(true);
 
   const firstName =
     user?.name?.split(' ')[0] ||
@@ -48,7 +53,7 @@ export default function DashboardOverviewPage() {
     }
   }, [locale]);
 
-  // Load other metrics
+  // Load other metrics & featured properties
   const fetchOtherData = useCallback(async () => {
     TenantService.getFavorites()
       .then(setFavorites)
@@ -60,10 +65,20 @@ export default function DashboardOverviewPage() {
 
     TenantService.getNotifications(1, 10)
       .then((res) => {
-        const unread = res.items.filter((n) => !n.isRead && !n.read).length;
+        const items = Array.isArray(res) ? res : (res?.items || []);
+        const unread = items.filter((n: any) => !n.isRead && !n.read).length;
         setUnreadNotifications(unread);
       })
       .catch((err) => console.warn('[Overview] Notifications load error:', err));
+
+    setLoadingProperties(true);
+    propertyService
+      .getProperties({ limit: 6 })
+      .then((props) => {
+        setFeaturedProperties(props);
+      })
+      .catch((err) => console.warn('[Overview] Properties load error:', err))
+      .finally(() => setLoadingProperties(false));
   }, []);
 
   useEffect(() => {
@@ -262,9 +277,9 @@ export default function DashboardOverviewPage() {
                 </div>
 
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  {item.property?.price && (
+                  {(item.totalPrice || item.room?.pricePerBed || item.property?.startingPrice || item.property?.price) && (
                     <span style={{ fontWeight: 700, color: 'var(--dary-blue)', fontSize: '1.05rem' }}>
-                      {item.property.price} {locale === 'ar' ? 'ج.م / شهريًا' : 'EGP / mo'}
+                      {item.totalPrice || item.room?.pricePerBed || item.property?.startingPrice || item.property?.price} {locale === 'ar' ? 'ج.م' : 'EGP'}
                     </span>
                   )}
                   <Link
@@ -281,6 +296,135 @@ export default function DashboardOverviewPage() {
                   >
                     {locale === 'ar' ? 'التفاصيل' : 'Details'}
                   </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* 4. Featured Available Housing Section */}
+      <div className="dary-section-card" style={{ marginTop: '1.5rem' }}>
+        <div className="dary-section-header">
+          <div>
+            <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 800, color: 'var(--dary-navy)' }}>
+              {locale === 'ar' ? '🏢 سكنات طلابية مقترحة ومتاحة' : '🏢 Recommended Available Housing'}
+            </h3>
+            <p style={{ margin: '0.25rem 0 0', fontSize: '0.825rem', color: 'var(--dary-muted)' }}>
+              {locale === 'ar'
+                ? 'استكشف أحدث العقارات والشقق المعتمدة والمتاحة للتسكين فورًا.'
+                : 'Explore verified student accommodations available for immediate booking.'}
+            </p>
+          </div>
+          <Link to="/properties" className="dary-view-all-link">
+            <span>{locale === 'ar' ? 'تصفح كل السكنات' : 'Explore All'}</span>
+            <span>→</span>
+          </Link>
+        </div>
+
+        {loadingProperties ? (
+          <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--dary-muted)' }}>
+            <div style={{ width: '28px', height: '28px', border: '3px solid #E2E8F0', borderTopColor: '#0B2A4A', borderRadius: '50%', margin: '0 auto 0.5rem', animation: 'spin 0.8s linear infinite' }} />
+            <p style={{ margin: 0, fontSize: '0.85rem' }}>{locale === 'ar' ? 'جاري تحميل السكنات المتاحة...' : 'Loading available housing...'}</p>
+          </div>
+        ) : featuredProperties.length === 0 ? (
+          <div style={{ padding: '2rem', textAlign: 'center', backgroundColor: '#F8FAFC', borderRadius: '12px' }}>
+            <p style={{ margin: 0, color: 'var(--dary-muted)', fontSize: '0.9rem' }}>
+              {locale === 'ar' ? 'لا توجد سكنات معروضة حاليًا في هذه المنطقة.' : 'No housing listings available currently.'}
+            </p>
+          </div>
+        ) : (
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '1.25rem',
+            }}
+          >
+            {featuredProperties.slice(0, 6).map((prop) => (
+              <div
+                key={prop.id}
+                style={{
+                  border: '1px solid var(--dary-border)',
+                  borderRadius: '14px',
+                  overflow: 'hidden',
+                  backgroundColor: '#FFFFFF',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.04)',
+                  transition: 'transform 0.2s ease, box-shadow 0.2s ease',
+                }}
+              >
+                <div style={{ position: 'relative', height: '160px', backgroundColor: '#EEF2F6', overflow: 'hidden' }}>
+                  <img
+                    src={prop.image || 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&q=80&w=600&h=400&fit=crop'}
+                    alt={typeof prop.title === 'string' ? prop.title : prop.title?.[locale] || ''}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
+                  <span
+                    style={{
+                      position: 'absolute',
+                      top: '10px',
+                      right: locale === 'ar' ? '10px' : 'auto',
+                      left: locale === 'ar' ? 'auto' : '10px',
+                      backgroundColor: 'rgba(11, 42, 74, 0.85)',
+                      color: '#FFFFFF',
+                      fontSize: '0.75rem',
+                      fontWeight: 700,
+                      padding: '0.25rem 0.65rem',
+                      borderRadius: '6px',
+                      backdropFilter: 'blur(4px)',
+                    }}
+                  >
+                    {typeof prop.type === 'string' ? prop.type : prop.type?.[locale] || ''}
+                  </span>
+                </div>
+
+                <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'space-between' }}>
+                  <div>
+                    <h4
+                      style={{
+                        margin: '0 0 0.35rem',
+                        fontSize: '1rem',
+                        fontWeight: 700,
+                        color: 'var(--dary-navy)',
+                        whiteSpace: 'nowrap',
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                      }}
+                    >
+                      {typeof prop.title === 'string' ? prop.title : prop.title?.[locale] || ''}
+                    </h4>
+                    <p style={{ margin: '0 0 0.75rem', fontSize: '0.8rem', color: 'var(--dary-muted)' }}>
+                      📍 {typeof prop.location === 'string' ? prop.location : prop.location?.[locale] || ''}
+                    </p>
+                  </div>
+
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.75rem', borderTop: '1px solid #F1F5F9' }}>
+                    <div>
+                      <span style={{ fontSize: '1.1rem', fontWeight: 800, color: 'var(--dary-blue)' }}>
+                        {prop.price?.toLocaleString()}
+                      </span>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--dary-muted)', marginInlineStart: '0.25rem' }}>
+                        {locale === 'ar' ? 'ج.م / شهريًا' : 'EGP / mo'}
+                      </span>
+                    </div>
+
+                    <Link
+                      to={`/properties/${prop.id}`}
+                      style={{
+                        padding: '0.45rem 0.9rem',
+                        backgroundColor: '#0B2A4A',
+                        color: '#FFFFFF',
+                        borderRadius: '8px',
+                        fontSize: '0.8rem',
+                        fontWeight: 600,
+                        textDecoration: 'none',
+                      }}
+                    >
+                      {locale === 'ar' ? 'عرض السكن' : 'View'}
+                    </Link>
+                  </div>
                 </div>
               </div>
             ))}

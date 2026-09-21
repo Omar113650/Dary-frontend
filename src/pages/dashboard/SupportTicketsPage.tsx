@@ -22,6 +22,8 @@ export default function SupportTicketsPage() {
   const [messages, setMessages] = useState<TicketMessageItem[]>([]);
   const [loadingMessages, setLoadingMessages] = useState(false);
   const [messagesError, setMessagesError] = useState<string | null>(null);
+  const [replyText, setReplyText] = useState('');
+  const [sendingReply, setSendingReply] = useState(false);
 
   const fetchTickets = useCallback(async () => {
     setLoading(true);
@@ -68,11 +70,37 @@ export default function SupportTicketsPage() {
   }
 
   async function handleCreateTicket() {
-    if (!ticketSubject.trim() || !ticketDescription.trim()) {
+    const cleanSubject = ticketSubject.trim();
+    const cleanDesc = ticketDescription.trim();
+
+    if (!cleanSubject) {
+      setCreateError(
+        locale === 'ar' ? 'يرجى كتابة عنوان التذكرة.' : 'Please enter a ticket subject.'
+      );
+      return;
+    }
+
+    if (cleanSubject.length < 3) {
       setCreateError(
         locale === 'ar'
-          ? 'يرجى إدخال عنوان التذكرة وتفاصيل المشكلة.'
-          : 'Please enter a ticket subject and description.'
+          ? 'عنوان التذكرة قصير جدًا (يجب أن يكون 3 أحرف على الأقل).'
+          : 'Ticket subject is too short (minimum 3 characters).'
+      );
+      return;
+    }
+
+    if (!cleanDesc) {
+      setCreateError(
+        locale === 'ar' ? 'يرجى كتابة تفاصيل المشكلة.' : 'Please enter problem description.'
+      );
+      return;
+    }
+
+    if (cleanDesc.length < 5) {
+      setCreateError(
+        locale === 'ar'
+          ? 'تفاصيل المشكلة قصيرة جدًا (يجب أن تكون 5 أحرف على الأقل لتوضيح المشكلة).'
+          : 'Description is too short (minimum 5 characters).'
       );
       return;
     }
@@ -82,8 +110,8 @@ export default function SupportTicketsPage() {
     try {
       await TenantService.createTicket({
         category: ticketCategory,
-        subject: ticketSubject,
-        description: ticketDescription,
+        subject: cleanSubject,
+        description: cleanDesc,
       });
       await fetchTickets();
       setIsNewTicketOpen(false);
@@ -91,11 +119,18 @@ export default function SupportTicketsPage() {
       setTicketDescription('');
     } catch (err: any) {
       console.error('[SupportTicketsPage] Create ticket error:', err);
+      let errMsg = err?.message;
+      if (err?.data?.errors) {
+        const errorList = Object.values(err.data.errors).flat();
+        if (errorList.length > 0) {
+          errMsg = errorList.join(' • ');
+        }
+      }
       setCreateError(
-        err?.message ||
+        errMsg ||
           (locale === 'ar'
-            ? 'فشل إنشاء التذكرة. يرجى إعادة المحاولة.'
-            : 'Failed to create ticket. Please try again.')
+            ? 'فشل إنشاء التذكرة. يرجى التأكد من البيانات والمحاولة مجددًا.'
+            : 'Failed to create ticket. Please check input and try again.')
       );
     } finally {
       setIsCreating(false);
@@ -322,14 +357,19 @@ export default function SupportTicketsPage() {
 
             {/* Subject */}
             <div style={{ marginBottom: '1rem' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--dary-navy)', marginBottom: '0.4rem' }}>
-                {locale === 'ar' ? 'عنوان الموضوع' : 'Subject'}
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--dary-navy)' }}>
+                  {locale === 'ar' ? 'عنوان الموضوع' : 'Subject'}
+                </label>
+                <span style={{ fontSize: '0.75rem', color: ticketSubject.trim().length < 3 ? '#DC2626' : 'var(--dary-muted)' }}>
+                  {ticketSubject.trim().length} / 3 {locale === 'ar' ? 'أحرف كحد أدنى' : 'chars min'}
+                </span>
+              </div>
               <input
                 type="text"
                 value={ticketSubject}
                 onChange={(e) => setTicketSubject(e.target.value)}
-                placeholder={locale === 'ar' ? 'اكتب عنوانًا موجزًا...' : 'Brief summary...'}
+                placeholder={locale === 'ar' ? 'اكتب عنوانًا موجزًا للمشكلة (مثال: تأخر تأكيد الحجز)' : 'Brief summary (min 3 chars)...'}
                 style={{
                   width: '100%',
                   padding: '0.7rem',
@@ -342,14 +382,19 @@ export default function SupportTicketsPage() {
 
             {/* Description */}
             <div style={{ marginBottom: '1.5rem' }}>
-              <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--dary-navy)', marginBottom: '0.4rem' }}>
-                {locale === 'ar' ? 'تفاصيل المشكلة' : 'Description'}
-              </label>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                <label style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--dary-navy)' }}>
+                  {locale === 'ar' ? 'تفاصيل المشكلة' : 'Description'}
+                </label>
+                <span style={{ fontSize: '0.75rem', color: ticketDescription.trim().length < 5 ? '#DC2626' : '#16A34A', fontWeight: 600 }}>
+                  {ticketDescription.trim().length} / 5 {locale === 'ar' ? 'أحرف كحد أدنى' : 'chars min'}
+                </span>
+              </div>
               <textarea
                 rows={4}
                 value={ticketDescription}
                 onChange={(e) => setTicketDescription(e.target.value)}
-                placeholder={locale === 'ar' ? 'اشرح بالتفصيل ما الذي حدث...' : 'Provide full details...'}
+                placeholder={locale === 'ar' ? 'اشرح تفاصيل ما حدث معك بالتفصيل...' : 'Provide full details...'}
                 style={{
                   width: '100%',
                   padding: '0.7rem',
@@ -503,28 +548,57 @@ export default function SupportTicketsPage() {
               )}
             </div>
 
-            {/* Disabled message reply box (as strictly instructed) */}
+            {/* Message reply box */}
             <div
               style={{
                 borderTop: '1px solid var(--dary-border)',
                 paddingTop: '0.75rem',
               }}
             >
-              <div
-                style={{
-                  padding: '0.65rem 0.9rem',
-                  borderRadius: '8px',
-                  backgroundColor: '#F8FAFC',
-                  border: '1px dashed var(--dary-border)',
-                  fontSize: '0.8rem',
-                  color: 'var(--dary-muted)',
-                  textAlign: 'center',
+              <form
+                onSubmit={async (e) => {
+                  e.preventDefault();
+                  if (!activeTicket || !replyText.trim()) return;
+                  setSendingReply(true);
+                  setMessagesError(null);
+                  try {
+                    await TenantService.sendTicketMessage(activeTicket.id, replyText.trim());
+                    setReplyText('');
+                    const updated = await TenantService.getTicketMessages(activeTicket.id);
+                    setMessages(updated);
+                  } catch (err: any) {
+                    setMessagesError(err?.message || (locale === 'ar' ? 'فشل إرسال الرد' : 'Failed to send reply'));
+                  } finally {
+                    setSendingReply(false);
+                  }
                 }}
+                style={{ display: 'flex', gap: '0.5rem' }}
               >
-                🔒 {locale === 'ar'
-                  ? 'إرسال الردود الجديدة متوقف مؤقتًا بانتظار اعتماد التوثيق النهائي من الخادم.'
-                  : 'Replying to tickets is currently disabled pending backend contract verification.'}
-              </div>
+                <input
+                  type="text"
+                  placeholder={locale === 'ar' ? 'اكتب ردك هنا...' : 'Type your reply here...'}
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  style={{
+                    flex: 1,
+                    padding: '0.65rem 0.9rem',
+                    borderRadius: '8px',
+                    border: '1px solid var(--dary-border)',
+                    fontSize: '0.875rem',
+                    outline: 'none',
+                  }}
+                />
+                <button
+                  type="submit"
+                  disabled={sendingReply || !replyText.trim()}
+                  className="dary-primary-btn"
+                  style={{ padding: '0.65rem 1.25rem', whiteSpace: 'nowrap' }}
+                >
+                  {sendingReply
+                    ? (locale === 'ar' ? 'جاري الإرسال...' : 'Sending...')
+                    : (locale === 'ar' ? 'إرسال' : 'Send')}
+                </button>
+              </form>
             </div>
           </div>
         </div>

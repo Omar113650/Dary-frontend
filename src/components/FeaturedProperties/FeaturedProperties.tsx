@@ -19,8 +19,8 @@ export default function FeaturedProperties() {
     setLoading(true);
     try {
       // Fetch a small set of properties for the home-page carousel
-      const data = await propertyService.getProperties({ limit: 8 });
-      setProperties(data);
+      const data = await propertyService.getFeaturedProperties(8);
+      setProperties(Array.isArray(data) ? data : []);
     } catch (err) {
       console.warn('[FeaturedProperties] Could not load from API:', err);
       setProperties([]);
@@ -100,7 +100,7 @@ export default function FeaturedProperties() {
   }
 
   // Empty state — backend returned 0 properties
-  if (!loading && properties.length === 0) {
+  if (!loading && (!Array.isArray(properties) || properties.length === 0)) {
     return null;
   }
 
@@ -168,7 +168,7 @@ export default function FeaturedProperties() {
 
         {/* Single Horizontal Row / Carousel */}
         <div className="featured-carousel" ref={carouselRef}>
-          {properties.map((property) => (
+          {(Array.isArray(properties) ? properties : []).map((property) => (
             <div key={property.id} className="featured-carousel-item">
               <PropertyCard property={property} />
             </div>

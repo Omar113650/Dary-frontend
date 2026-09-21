@@ -84,9 +84,8 @@ export default function AdminUsersPage() {
         type: 'success',
         text: locale === 'ar' ? 'تم تحديث حالة المستخدم بنجاح.' : 'User status updated successfully.',
       });
-      // Refresh list
-      fetchUsers();
-      fetchUsersStatus();
+      // Refresh list & status metrics in parallel
+      await Promise.all([fetchUsers(), fetchUsersStatus()]);
     } catch (err: any) {
       console.error('[AdminUsersPage] PATCH /auth/users/:id/status failed:', err);
       setActionMessage({
@@ -107,13 +106,6 @@ export default function AdminUsersPage() {
         ? 'admin'
         : 'owner';
 
-    const confirmMsg =
-      locale === 'ar'
-        ? `هل أنت متأكد من تغيير رتبة هذا المستخدم إلى "${nextRole}"؟`
-        : `Are you sure you want to reassign this user's role to "${nextRole}"?`;
-
-    if (!window.confirm(confirmMsg)) return;
-
     setActiveUpdatingId(userId);
     setActionMessage(null);
     try {
@@ -122,7 +114,7 @@ export default function AdminUsersPage() {
         type: 'success',
         text: locale === 'ar' ? `تم تعيين الدور (${nextRole}) بنجاح.` : `Role (${nextRole}) assigned successfully.`,
       });
-      fetchUsers();
+      await Promise.all([fetchUsers(), fetchUsersStatus()]);
     } catch (err: any) {
       console.error('[AdminUsersPage] POST /roles/assign failed:', err);
       setActionMessage({
@@ -137,12 +129,32 @@ export default function AdminUsersPage() {
   // Safe parse status counts
   const normalizeStatusList = (raw: any): AdminStatusCount[] => {
     if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    if (typeof raw === 'object') {
-      return Object.entries(raw).map(([key, val]) => ({
-        status: key,
-        count: typeof val === 'number' ? val : Number((val as any)?.count || 0),
-      }));
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (Array.isArray(unwrapped)) {
+      return unwrapped
+        .filter((item) => item && item.status && String(item.status).toLowerCase() !== 'total')
+        .map((item) => ({
+          status: String(item.status).toUpperCase(),
+          count: typeof item.count === 'number' ? item.count : Number(item.count || 0),
+        }));
+    }
+
+    if (typeof unwrapped === 'object') {
+      return Object.entries(unwrapped)
+        .filter(([key, val]) => {
+          const lower = key.toLowerCase();
+          return lower !== 'total' && lower !== 'totalproperties' && typeof val === 'number';
+        })
+        .map(([key, val]) => ({
+          status: key.toUpperCase(),
+          count: Number(val || 0),
+        }));
     }
     return [];
   };

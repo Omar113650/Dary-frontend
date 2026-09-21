@@ -45,10 +45,28 @@ export default function AdminAnalyticsPage() {
     fetchAnalyticsData();
   }, [fetchAnalyticsData]);
 
-  const occupancyRate = analytics?.occupancyRate ?? analytics?.occupancy ?? 0;
-  const dau = analytics?.dailyActiveUsers ?? analytics?.activeUsers ?? 0;
-  const bookingVolume = analytics?.bookingVolume ?? analytics?.totalBookings ?? 0;
-  const userGrowth = analytics?.userGrowth ?? analytics?.growthRate ?? 0;
+  const parseMetricNumber = (val: any, fallback = 0): number => {
+    if (typeof val === 'number' && !Number.isNaN(val)) return val;
+    if (typeof val === 'string' && !Number.isNaN(Number(val))) return Number(val);
+    if (Array.isArray(val)) return val.reduce((sum, item) => sum + (Number(item?.count) || 0), 0);
+    if (typeof val === 'object' && val !== null) {
+      if (typeof val.count === 'number') return val.count;
+      if (typeof val.rate === 'number') return val.rate;
+      if (typeof val.total === 'number') return val.total;
+    }
+    return fallback;
+  };
+
+  const occupancyRate = parseMetricNumber(analytics?.occupancyRate ?? analytics?.summary?.occupancyRate ?? analytics?.occupancy, 0);
+  const dau = parseMetricNumber(analytics?.dailyActiveUsers ?? analytics?.summary?.dailyActiveUsers ?? analytics?.activeUsers, 0);
+  const bookingVolume = parseMetricNumber(analytics?.bookingVolume ?? analytics?.summary?.bookingVolume ?? analytics?.totalBookings, 0);
+  const userGrowth = parseMetricNumber(
+    analytics?.growthRate ??
+    analytics?.summary?.newUsers ??
+    analytics?.newUsers ??
+    analytics?.userGrowth,
+    0
+  );
 
   const totalRevenue =
     revenue?.totalRevenue ??
@@ -236,7 +254,10 @@ export default function AdminAnalyticsPage() {
                     <div style={{ fontSize: '0.8rem', color: '#64748B' }}>{locale === 'ar' ? 'الطلاب والملاك الجدد' : 'New signups over 7 days'}</div>
                   </div>
                   <div style={{ fontSize: '1.25rem', fontWeight: 700, color: userGrowth >= 0 ? '#16A34A' : '#DC2626' }}>
-                    {userGrowth >= 0 ? `+${userGrowth}%` : `${userGrowth}%`}
+                    {userGrowth >= 0 ? `+${userGrowth}` : `${userGrowth}`}
+                    <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#64748B', marginInlineStart: '4px' }}>
+                      {locale === 'ar' ? 'مستخدم' : 'users'}
+                    </span>
                   </div>
                 </div>
 

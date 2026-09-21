@@ -18,6 +18,20 @@ export default function AdminPropertiesPage() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
 
+  // Action State
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
+  const [rejectModalId, setRejectModalId] = useState<string | null>(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+  const [suspendModalId, setSuspendModalId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (actionMessage) {
+      const timer = setTimeout(() => setActionMessage(null), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionMessage]);
+
   // 1. Fetch Property Status Metrics
   const fetchStatus = useCallback(async () => {
     setLoadingStatus(true);
@@ -56,6 +70,80 @@ export default function AdminPropertiesPage() {
     }
   }, [page, locale]);
 
+  // Handle Approve
+  const handleApprove = async (id: string) => {
+    setActionLoadingId(id);
+    setActionMessage(null);
+    try {
+      await AdminService.reviewProperty(id, 'APPROVED');
+      setActionMessage({
+        type: 'success',
+        text: locale === 'ar' ? 'تم اعتماد العقار بنجاح وتفعيله على المنصة.' : 'Property approved and activated successfully.',
+      });
+      await Promise.all([fetchProperties(), fetchStatus()]);
+    } catch (err: any) {
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشلت عملية اعتماد العقار.' : 'Failed to approve property.'),
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Handle Reject
+  const handleReject = async (id: string) => {
+    if (!rejectionReason.trim()) {
+      setActionMessage({
+        type: 'error',
+        text: locale === 'ar' ? 'يرجى كتابة سبب الرفض.' : 'Please provide a rejection reason.',
+      });
+      return;
+    }
+    setActionLoadingId(id);
+    setActionMessage(null);
+    try {
+      await AdminService.reviewProperty(id, 'REJECTED', rejectionReason.trim());
+      setActionMessage({
+        type: 'success',
+        text: locale === 'ar' ? 'تم رفض العقار وإشعار المالك بالسبب.' : 'Property rejected and owner notified.',
+      });
+      setRejectModalId(null);
+      setRejectionReason('');
+      await Promise.all([fetchProperties(), fetchStatus()]);
+    } catch (err: any) {
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشلت عملية رفض العقار.' : 'Failed to reject property.'),
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
+  // Handle Suspend
+  const handleConfirmSuspend = async () => {
+    if (!suspendModalId) return;
+    setActionLoadingId(suspendModalId);
+    setActionMessage(null);
+    try {
+      await AdminService.suspendProperty(suspendModalId);
+      setActionMessage({
+        type: 'success',
+        text: locale === 'ar' ? 'تم تعليق العقار بنجاح.' : 'Property suspended successfully.',
+      });
+      setSuspendModalId(null);
+      await Promise.all([fetchProperties(), fetchStatus()]);
+    } catch (err: any) {
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشلت عملية تعليق العقار.' : 'Failed to suspend property.'),
+      });
+    } finally {
+      setActionLoadingId(null);
+    }
+  };
+
   useEffect(() => {
     fetchStatus();
   }, [fetchStatus]);
@@ -66,12 +154,32 @@ export default function AdminPropertiesPage() {
 
   const normalizeStatusList = (raw: any): AdminStatusCount[] => {
     if (!raw) return [];
-    if (Array.isArray(raw)) return raw;
-    if (typeof raw === 'object') {
-      return Object.entries(raw).map(([key, val]) => ({
-        status: key,
-        count: typeof val === 'number' ? val : Number((val as any)?.count || 0),
-      }));
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (Array.isArray(unwrapped)) {
+      return unwrapped
+        .filter((item) => item && item.status && String(item.status).toLowerCase() !== 'total')
+        .map((item) => ({
+          status: String(item.status).toUpperCase(),
+          count: typeof item.count === 'number' ? item.count : Number(item.count || 0),
+        }));
+    }
+
+    if (typeof unwrapped === 'object') {
+      return Object.entries(unwrapped)
+        .filter(([key, val]) => {
+          const lower = key.toLowerCase();
+          return lower !== 'total' && lower !== 'totalproperties' && typeof val === 'number';
+        })
+        .map(([key, val]) => ({
+          status: key.toUpperCase(),
+          count: Number(val || 0),
+        }));
     }
     return [];
   };
@@ -84,6 +192,41 @@ export default function AdminPropertiesPage() {
 
   return (
     <div className="dary-page-container">
+      {/* Action Banner */}
+      {actionMessage && (
+        <div
+          style={{
+            marginBottom: '1rem',
+            padding: '0.85rem 1.25rem',
+            borderRadius: '10px',
+            backgroundColor: actionMessage.type === 'success' ? '#DEF7EC' : '#FDE8E8',
+            color: actionMessage.type === 'success' ? '#03543F' : '#9B1C1C',
+            border: `1px solid ${actionMessage.type === 'success' ? '#31C48D' : '#F98080'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontWeight: 600,
+            fontSize: '0.9rem',
+          }}
+        >
+          <span>{actionMessage.type === 'success' ? '✓ ' : '✕ '}{actionMessage.text}</span>
+          <button
+            type="button"
+            onClick={() => setActionMessage(null)}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'inherit',
+              fontWeight: 700,
+              fontSize: '1rem',
+            }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="dary-page-header">
         <div>
@@ -284,20 +427,105 @@ export default function AdminPropertiesPage() {
                         </td>
 
                         <td style={{ padding: '0.85rem 1rem' }}>
-                          <Link
-                            to={`/properties/${p.id}`}
-                            style={{
-                              padding: '0.35rem 0.75rem',
-                              borderRadius: '6px',
-                              backgroundColor: '#0B2A4A',
-                              color: '#FFFFFF',
-                              textDecoration: 'none',
-                              fontSize: '0.8rem',
-                              fontWeight: 600,
-                            }}
-                          >
-                            {locale === 'ar' ? 'عرض' : 'View'}
-                          </Link>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexWrap: 'wrap' }}>
+                            <Link
+                              to={`/properties/${p.id}`}
+                              style={{
+                                padding: '0.35rem 0.65rem',
+                                borderRadius: '6px',
+                                backgroundColor: '#0B2A4A',
+                                color: '#FFFFFF',
+                                textDecoration: 'none',
+                                fontSize: '0.78rem',
+                                fontWeight: 600,
+                              }}
+                            >
+                              {locale === 'ar' ? 'عرض' : 'View'}
+                            </Link>
+
+                            {p.status === 'PENDING' && (
+                              <>
+                                <button
+                                  type="button"
+                                  disabled={actionLoadingId === p.id}
+                                  onClick={() => handleApprove(p.id)}
+                                  title={locale === 'ar' ? 'الموافقة على العقار ونشره' : 'Approve Property'}
+                                  style={{
+                                    padding: '0.35rem 0.65rem',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#16A34A',
+                                    color: '#FFFFFF',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    cursor: actionLoadingId === p.id ? 'not-allowed' : 'pointer',
+                                    border: 'none',
+                                  }}
+                                >
+                                  {actionLoadingId === p.id ? '...' : (locale === 'ar' ? '✓ قبول' : '✓ Approve')}
+                                </button>
+                                <button
+                                  type="button"
+                                  disabled={actionLoadingId === p.id}
+                                  onClick={() => setRejectModalId(p.id)}
+                                  title={locale === 'ar' ? 'رفض العقار مع توضيح السبب' : 'Reject Property'}
+                                  style={{
+                                    padding: '0.35rem 0.65rem',
+                                    borderRadius: '6px',
+                                    backgroundColor: '#DC2626',
+                                    color: '#FFFFFF',
+                                    fontSize: '0.78rem',
+                                    fontWeight: 700,
+                                    cursor: actionLoadingId === p.id ? 'not-allowed' : 'pointer',
+                                    border: 'none',
+                                  }}
+                                >
+                                  {locale === 'ar' ? '✕ رفض' : '✕ Reject'}
+                                </button>
+                              </>
+                            )}
+
+                            {p.status === 'APPROVED' && (
+                              <button
+                                type="button"
+                                disabled={actionLoadingId === p.id}
+                                onClick={() => setSuspendModalId(p.id)}
+                                title={locale === 'ar' ? 'تعليق العقار مؤقتاً' : 'Suspend Property'}
+                                style={{
+                                  padding: '0.35rem 0.65rem',
+                                  borderRadius: '6px',
+                                  backgroundColor: '#F59E0B',
+                                  color: '#FFFFFF',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  cursor: actionLoadingId === p.id ? 'not-allowed' : 'pointer',
+                                  border: 'none',
+                                }}
+                              >
+                                {actionLoadingId === p.id ? '...' : (locale === 'ar' ? '⏸ تعليق' : '⏸ Suspend')}
+                              </button>
+                            )}
+
+                            {(p.status === 'SUSPENDED' || p.status === 'REJECTED') && (
+                              <button
+                                type="button"
+                                disabled={actionLoadingId === p.id}
+                                onClick={() => handleApprove(p.id)}
+                                title={locale === 'ar' ? 'إعادة اعتماد وتفعيل العقار' : 'Re-approve Property'}
+                                style={{
+                                  padding: '0.35rem 0.65rem',
+                                  borderRadius: '6px',
+                                  backgroundColor: '#16A34A',
+                                  color: '#FFFFFF',
+                                  fontSize: '0.78rem',
+                                  fontWeight: 700,
+                                  cursor: actionLoadingId === p.id ? 'not-allowed' : 'pointer',
+                                  border: 'none',
+                                }}
+                              >
+                                {actionLoadingId === p.id ? '...' : (locale === 'ar' ? '✓ تفعيل' : '✓ Activate')}
+                              </button>
+                            )}
+                          </div>
                         </td>
                       </tr>
                     );
@@ -305,6 +533,167 @@ export default function AdminPropertiesPage() {
                 </tbody>
               </table>
             </div>
+
+            {/* Reject Modal */}
+            {rejectModalId && (
+              <div
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999,
+                  padding: '1rem',
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '16px',
+                    padding: '1.75rem',
+                    maxWidth: '450px',
+                    width: '100%',
+                    boxShadow: '0 20px 48px rgba(0,0,0,0.2)',
+                  }}
+                >
+                  <h3 style={{ fontSize: '1.2rem', fontWeight: 800, color: '#0B2A4A', marginBottom: '0.75rem' }}>
+                    {locale === 'ar' ? '🚫 رفض طلب إدراج العقار' : '🚫 Reject Property Listing'}
+                  </h3>
+                  <p style={{ fontSize: '0.875rem', color: '#64748B', marginBottom: '1rem', lineHeight: 1.5 }}>
+                    {locale === 'ar'
+                      ? 'يرجى كتابة سبب واضح للرفض حتى يتمكن المالك من تصحيحه وإعادة المحاولة:'
+                      : 'Please specify the rejection reason for the owner:'}
+                  </p>
+                  <textarea
+                    rows={3}
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    placeholder={locale === 'ar' ? 'مثال: الصور غير واضحة، أو تفاصيل الغرف غير مكتملة...' : 'e.g. Unclear photos or incomplete room data...'}
+                    style={{
+                      width: '100%',
+                      padding: '0.75rem',
+                      borderRadius: '8px',
+                      border: '1px solid #CBD5E1',
+                      fontSize: '0.9rem',
+                      marginBottom: '1.25rem',
+                      outline: 'none',
+                    }}
+                  />
+                  <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setRejectModalId(null);
+                        setRejectionReason('');
+                      }}
+                      style={{
+                        padding: '0.55rem 1rem',
+                        borderRadius: '8px',
+                        backgroundColor: '#F1F5F9',
+                        color: '#0B2A4A',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        cursor: 'pointer',
+                        border: 'none',
+                      }}
+                    >
+                      {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actionLoadingId === rejectModalId}
+                      onClick={() => handleReject(rejectModalId)}
+                      style={{
+                        padding: '0.55rem 1.25rem',
+                        borderRadius: '8px',
+                        backgroundColor: '#DC2626',
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                        fontSize: '0.875rem',
+                        cursor: actionLoadingId === rejectModalId ? 'not-allowed' : 'pointer',
+                        border: 'none',
+                      }}
+                    >
+                      {actionLoadingId === rejectModalId ? '...' : (locale === 'ar' ? 'تأكيد الرفض' : 'Confirm Reject')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Suspend Confirmation Modal */}
+            {suspendModalId && (
+              <div
+                style={{
+                  position: 'fixed',
+                  inset: 0,
+                  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  zIndex: 9999,
+                  padding: '1rem',
+                }}
+              >
+                <div
+                  style={{
+                    backgroundColor: '#FFFFFF',
+                    borderRadius: '12px',
+                    padding: '1.5rem',
+                    maxWidth: '420px',
+                    width: '100%',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+                  }}
+                >
+                  <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0B2A4A', marginBottom: '0.5rem' }}>
+                    {locale === 'ar' ? 'تعليق العقار' : 'Suspend Property'}
+                  </h3>
+                  <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '1.25rem' }}>
+                    {locale === 'ar'
+                      ? 'هل أنت متأكد من رغبتك في تعليق هذا العقار مؤقتاً؟ لن يظهر للطلاب في نتائج البحث.'
+                      : 'Are you sure you want to suspend this property? It will be hidden from search results.'}
+                  </p>
+
+                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                    <button
+                      type="button"
+                      onClick={() => setSuspendModalId(null)}
+                      style={{
+                        padding: '0.55rem 1rem',
+                        borderRadius: '8px',
+                        border: '1px solid #CBD5E1',
+                        backgroundColor: '#FFFFFF',
+                        color: '#64748B',
+                        fontWeight: 600,
+                        fontSize: '0.875rem',
+                        cursor: 'pointer',
+                      }}
+                    >
+                      {locale === 'ar' ? 'تراجع' : 'Cancel'}
+                    </button>
+                    <button
+                      type="button"
+                      disabled={actionLoadingId === suspendModalId}
+                      onClick={handleConfirmSuspend}
+                      style={{
+                        padding: '0.55rem 1.25rem',
+                        borderRadius: '8px',
+                        backgroundColor: '#F59E0B',
+                        color: '#FFFFFF',
+                        fontWeight: 700,
+                        fontSize: '0.875rem',
+                        cursor: actionLoadingId === suspendModalId ? 'not-allowed' : 'pointer',
+                        border: 'none',
+                      }}
+                    >
+                      {actionLoadingId === suspendModalId ? '...' : (locale === 'ar' ? 'تأكيد التعليق' : 'Confirm Suspend')}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Pagination */}
             {totalPages > 1 && (

@@ -18,37 +18,33 @@ export interface AuthContextType {
 
 export function extractUserRole(user: any): string | null {
   if (!user) return null;
-  if (typeof user.role === 'string') return user.role.toLowerCase();
-  if (Array.isArray(user.roles)) {
-    for (const r of user.roles) {
-      if (typeof r === 'string') return r.toLowerCase();
+  const u = user.user || user.profile?.user || user;
+  if (typeof u.role === 'string' && u.role) return u.role.toLowerCase();
+  if (typeof user.role === 'string' && user.role) return user.role.toLowerCase();
+
+  const rolesArr = u.roles || user.roles || u.userRoles || user.userRoles;
+  if (Array.isArray(rolesArr)) {
+    for (const r of rolesArr) {
+      if (typeof r === 'string' && r) return r.toLowerCase();
       if (r?.name) return r.name.toLowerCase();
       if (r?.role?.name) return r.role.name.toLowerCase();
     }
   }
-  if (Array.isArray(user.userRoles)) {
-    for (const ur of user.userRoles) {
-      if (ur?.role?.name) return ur.role.name.toLowerCase();
-      if (ur?.name) return ur.name.toLowerCase();
-    }
-  }
-  return null;
+
+  // Fallback: If user has an ID, default to tenant
+  return 'tenant';
 }
 
 export function isUserAdmin(user: any): boolean {
   if (!user) return false;
-  const directRole = typeof user.role === 'string' ? user.role.toLowerCase() : null;
+  const u = user.user || user.profile?.user || user;
+  const directRole = typeof u.role === 'string' ? u.role.toLowerCase() : typeof user.role === 'string' ? user.role.toLowerCase() : null;
   if (directRole === 'admin' || directRole === 'super_admin' || directRole === 'superadmin') return true;
 
-  if (Array.isArray(user.roles)) {
-    for (const r of user.roles) {
+  const rolesArr = u.roles || user.roles || u.userRoles || user.userRoles;
+  if (Array.isArray(rolesArr)) {
+    for (const r of rolesArr) {
       const str = typeof r === 'string' ? r.toLowerCase() : r?.name?.toLowerCase() || r?.role?.name?.toLowerCase();
-      if (str === 'admin' || str === 'super_admin' || str === 'superadmin') return true;
-    }
-  }
-  if (Array.isArray(user.userRoles)) {
-    for (const ur of user.userRoles) {
-      const str = ur?.role?.name?.toLowerCase() || ur?.name?.toLowerCase();
       if (str === 'admin' || str === 'super_admin' || str === 'superadmin') return true;
     }
   }
@@ -120,8 +116,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const isTenant = role === 'tenant';
-  const isOwner = role === 'owner';
+  const isTenant = role === 'tenant' || role === 'student' || role === 'user';
+  const isOwner = role === 'owner' || role === 'landlord';
   const isAdmin = isUserAdmin(user) || role === 'admin' || role === 'super_admin' || role === 'superadmin';
 
   return (

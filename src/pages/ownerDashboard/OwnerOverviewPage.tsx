@@ -13,6 +13,7 @@ export default function OwnerOverviewPage() {
     : '/owner-dashboard';
 
   const firstName =
+    user?.firstName ||
     user?.name?.split(' ')[0] ||
     user?.email?.split('@')[0] ||
     (locale === 'ar' ? 'المالك' : 'Owner');
@@ -21,6 +22,10 @@ export default function OwnerOverviewPage() {
   const [propertiesStatus, setPropertiesStatus] = useState<any>(null);
   const [loadingProps, setLoadingProps] = useState(true);
   const [propsError, setPropsError] = useState<string | null>(null);
+
+  // 1b. Real Properties List State
+  const [myPropertiesList, setMyPropertiesList] = useState<any[]>([]);
+  const [loadingMyProps, setLoadingMyProps] = useState(true);
 
   // 2. Booking Status State
   const [bookingsStatus, setBookingsStatus] = useState<any>(null);
@@ -37,15 +42,25 @@ export default function OwnerOverviewPage() {
   const [loadingCalendar, setLoadingCalendar] = useState(true);
   const [calendarError, setCalendarError] = useState<string | null>(null);
 
-  // Fetch Section A: GET /dashboard/owner/properties/status
+  // Fetch Section A: Properties Status & List
   const fetchPropertiesStatus = useCallback(async () => {
     setLoadingProps(true);
+    setLoadingMyProps(true);
     setPropsError(null);
     try {
-      const data = await OwnerService.getPropertiesStatus();
-      setPropertiesStatus(data);
+      const [statusData, propsData] = await Promise.allSettled([
+        OwnerService.getPropertiesStatus(),
+        OwnerService.getMyProperties(),
+      ]);
+
+      if (statusData.status === 'fulfilled') {
+        setPropertiesStatus(statusData.value);
+      }
+      if (propsData.status === 'fulfilled') {
+        setMyPropertiesList(Array.isArray(propsData.value) ? propsData.value : []);
+      }
     } catch (err: any) {
-      console.error('[OwnerOverview] GET /dashboard/owner/properties/status failed:', err);
+      console.error('[OwnerOverview] Properties status fetch failed:', err);
       setPropsError(
         err?.message ||
           (locale === 'ar'
@@ -54,10 +69,11 @@ export default function OwnerOverviewPage() {
       );
     } finally {
       setLoadingProps(false);
+      setLoadingMyProps(false);
     }
   }, [locale]);
 
-  // Fetch Section B: GET /dashboard/owner/bookings/status
+  // Fetch Section B: Bookings Status
   const fetchBookingsStatus = useCallback(async () => {
     setLoadingBookings(true);
     setBookingsError(null);
@@ -65,7 +81,7 @@ export default function OwnerOverviewPage() {
       const data = await OwnerService.getBookingsStatus();
       setBookingsStatus(data);
     } catch (err: any) {
-      console.error('[OwnerOverview] GET /dashboard/owner/bookings/status failed:', err);
+      console.error('[OwnerOverview] Bookings status fetch failed:', err);
       setBookingsError(
         err?.message ||
           (locale === 'ar'
@@ -77,7 +93,7 @@ export default function OwnerOverviewPage() {
     }
   }, [locale]);
 
-  // Fetch Section C: GET /dashboard/owner/bookings/revenue
+  // Fetch Section C: Revenue
   const fetchRevenue = useCallback(async () => {
     setLoadingRevenue(true);
     setRevenueError(null);
@@ -85,7 +101,7 @@ export default function OwnerOverviewPage() {
       const data = await OwnerService.getRevenue();
       setRevenueData(data);
     } catch (err: any) {
-      console.error('[OwnerOverview] GET /dashboard/owner/bookings/revenue failed:', err);
+      console.error('[OwnerOverview] Revenue fetch failed:', err);
       setRevenueError(
         err?.message ||
           (locale === 'ar'
@@ -97,7 +113,7 @@ export default function OwnerOverviewPage() {
     }
   }, [locale]);
 
-  // Fetch Section D: GET /dashboard/owner/calendar/summary
+  // Fetch Section D: Calendar Summary
   const fetchCalendar = useCallback(async () => {
     setLoadingCalendar(true);
     setCalendarError(null);
@@ -105,7 +121,7 @@ export default function OwnerOverviewPage() {
       const data = await OwnerService.getCalendarSummary();
       setCalendarData(data);
     } catch (err: any) {
-      console.error('[OwnerOverview] GET /dashboard/owner/calendar/summary failed:', err);
+      console.error('[OwnerOverview] Calendar summary fetch failed:', err);
       setCalendarError(
         err?.message ||
           (locale === 'ar'
@@ -122,26 +138,37 @@ export default function OwnerOverviewPage() {
     fetchBookingsStatus();
     fetchRevenue();
     fetchCalendar();
-  }, [fetchPropertiesStatus, fetchBookingsStatus, fetchRevenue, fetchCalendar]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Helper to safely parse status counts
   function extractStatusEntries(raw: any): Array<{ status: string; count: number }> {
     if (!raw) return [];
-    if (Array.isArray(raw)) {
-      return raw.map((item) => ({
-        status: item.status || item.name || item.key || 'UNKNOWN',
-        count: Number(item.count || item._count || item.total || 0),
-      }));
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (Array.isArray(unwrapped)) {
+      return unwrapped
+        .filter((item) => item && (item.status || item.name || item.key) && String(item.status || item.name || item.key).toLowerCase() !== 'total')
+        .map((item) => ({
+          status: String(item.status || item.name || item.key).toUpperCase(),
+          count: Number(item.count || item._count || 0),
+        }));
     }
-    if (typeof raw === 'object') {
+
+    if (typeof unwrapped === 'object') {
       const entries: Array<{ status: string; count: number }> = [];
-      const ignoredKeys = ['success', 'message', 'status', 'statusCode', 'data'];
-      for (const [key, val] of Object.entries(raw)) {
-        if (!ignoredKeys.includes(key)) {
+      const ignoredKeys = ['success', 'message', 'statuscode', 'total', 'totalproperties'];
+      for (const [key, val] of Object.entries(unwrapped)) {
+        if (!ignoredKeys.includes(key.toLowerCase())) {
           if (typeof val === 'number') {
-            entries.push({ status: key, count: val });
+            entries.push({ status: key.toUpperCase(), count: val });
           } else if (val && typeof val === 'object' && 'count' in (val as any)) {
-            entries.push({ status: key, count: Number((val as any).count) });
+            entries.push({ status: key.toUpperCase(), count: Number((val as any).count) });
           }
         }
       }
@@ -150,8 +177,24 @@ export default function OwnerOverviewPage() {
     return [];
   }
 
+  const extractOwnerTotal = (raw: any, list: Array<{ status: string; count: number }>): number => {
+    if (typeof raw === 'number') return raw;
+    const unwrapped =
+      (raw?.status && typeof raw.status === 'object' && !Array.isArray(raw.status))
+        ? raw.status
+        : (raw?.data && typeof raw.data === 'object' && !Array.isArray(raw.data))
+        ? raw.data
+        : raw;
+
+    if (unwrapped?.totalProperties !== undefined && typeof unwrapped.totalProperties === 'number') return unwrapped.totalProperties;
+    if (unwrapped?.total !== undefined && typeof unwrapped.total === 'number') return unwrapped.total;
+    return list.reduce((acc, curr) => acc + curr.count, 0);
+  };
+
   const propStatusList = extractStatusEntries(propertiesStatus);
   const bookingStatusList = extractStatusEntries(bookingsStatus);
+  const totalOwnerProps = extractOwnerTotal(propertiesStatus, propStatusList);
+  const totalOwnerBookings = extractOwnerTotal(bookingsStatus, bookingStatusList);
 
   // Parse revenue safely
   const parsedRevenue =
@@ -162,10 +205,16 @@ export default function OwnerOverviewPage() {
 
   const revenueCurrency = revenueData?.currency || (locale === 'ar' ? 'ج.م' : 'EGP');
 
+  // Calendar summary data extraction
+  const activeBookings = calendarData?.activeBookings ?? 0;
+  const upcomingBookings = calendarData?.upcomingBookings ?? 0;
+  const expiringSoon = calendarData?.expiringSoon ?? 0;
+  const occupiedBeds = calendarData?.occupiedBeds ?? 0;
+
   return (
     <div>
       {/* 1. Welcome Card */}
-      <div className="dary-welcome-card">
+      <div className="dary-welcome-card" style={{ marginBottom: '1.5rem' }}>
         <div>
           <h1 className="dary-welcome-title">
             {locale === 'ar' ? `مرحبًا بك، ${firstName} 🏢` : `Welcome, ${firstName} 🏢`}
@@ -177,25 +226,30 @@ export default function OwnerOverviewPage() {
           </p>
         </div>
 
-        <div className="dary-welcome-actions">
-          <Link to={`${basePath}/properties`} className="dary-primary-btn">
+        <div className="dary-welcome-actions" style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <Link
+            to={`${basePath}/properties/new`}
+            className="dary-primary-btn"
+            style={{ display: 'inline-flex', alignItems: 'center', gap: '0.4rem', backgroundColor: '#16A34A', textDecoration: 'none' }}
+          >
+            <span>+</span>
+            <span>{locale === 'ar' ? 'إضافة عقار جديد' : 'Add Property'}</span>
+          </Link>
+          <Link to={`${basePath}/properties`} className="dary-primary-btn" style={{ textDecoration: 'none' }}>
             <span>{locale === 'ar' ? 'إدارة العقارات' : 'Manage Properties'}</span>
           </Link>
-          <Link to={`${basePath}/bookings`} className="dary-secondary-btn">
+          <Link to={`${basePath}/bookings`} className="dary-secondary-btn" style={{ textDecoration: 'none' }}>
             <span>{locale === 'ar' ? 'عرض الحجوزات' : 'View Bookings'}</span>
           </Link>
         </div>
       </div>
 
-      {/* 2. Top Metric Cards (Revenue + Total Counts) */}
-      <div className="dary-metrics-grid">
+      {/* 2. Top Metric Cards (Revenue + Counts + Occupancy) */}
+      <div className="dary-metrics-grid" style={{ marginBottom: '1.5rem' }}>
         {/* Revenue Card */}
         <div className="dary-metric-card">
-          <div className="dary-metric-icon-wrap" style={{ backgroundColor: '#EEF3FF', color: '#2F6BFF' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="1" x2="12" y2="23" />
-              <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-            </svg>
+          <div className="dary-metric-icon-wrap" style={{ backgroundColor: '#FAF5FF', color: '#9333EA' }}>
+            💰
           </div>
           <div>
             <h3 className="dary-metric-number">
@@ -210,7 +264,7 @@ export default function OwnerOverviewPage() {
               )}
             </h3>
             <p className="dary-metric-label">
-              {locale === 'ar' ? 'إجمالي الإيرادات' : 'Total Revenue'}
+              {locale === 'ar' ? 'إجمالي الإيرادات المحققة' : 'Total Revenue'}
             </p>
           </div>
         </div>
@@ -218,209 +272,428 @@ export default function OwnerOverviewPage() {
         {/* Properties Total */}
         <div className="dary-metric-card">
           <div className="dary-metric-icon-wrap" style={{ backgroundColor: '#F0FDF4', color: '#16A34A' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-              <polyline points="9 22 9 12 15 12 15 22" />
-            </svg>
+            🏠
           </div>
           <div>
             <h3 className="dary-metric-number">
-              {loadingProps ? '...' : propsError ? '—' : propStatusList.reduce((acc, curr) => acc + curr.count, 0)}
+              {loadingProps ? '...' : propsError ? '—' : totalOwnerProps}
             </h3>
             <p className="dary-metric-label">
-              {locale === 'ar' ? 'إجمالي العقارات' : 'Total Properties'}
+              {locale === 'ar' ? 'إجمالي العقارات المسجلة' : 'Total Properties'}
             </p>
           </div>
         </div>
 
         {/* Bookings Total */}
         <div className="dary-metric-card">
-          <div className="dary-metric-icon-wrap" style={{ backgroundColor: '#FEF9C3', color: '#CA8A04' }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-              <rect x="8" y="2" width="8" height="4" rx="1" ry="1" />
-            </svg>
+          <div className="dary-metric-icon-wrap" style={{ backgroundColor: '#EFF6FF', color: '#2F6BFF' }}>
+            📋
           </div>
           <div>
             <h3 className="dary-metric-number">
-              {loadingBookings ? '...' : bookingsError ? '—' : bookingStatusList.reduce((acc, curr) => acc + curr.count, 0)}
+              {loadingBookings ? '...' : bookingsError ? '—' : totalOwnerBookings}
             </h3>
             <p className="dary-metric-label">
-              {locale === 'ar' ? 'إجمالي الحجوزات' : 'Total Bookings'}
+              {locale === 'ar' ? 'إجمالي طلبات الحجز' : 'Total Bookings'}
+            </p>
+          </div>
+        </div>
+
+        {/* Occupied Beds */}
+        <div className="dary-metric-card">
+          <div className="dary-metric-icon-wrap" style={{ backgroundColor: '#FEF9C3', color: '#CA8A04' }}>
+            🛏️
+          </div>
+          <div>
+            <h3 className="dary-metric-number">
+              {loadingCalendar ? '...' : calendarError ? '—' : occupiedBeds}
+            </h3>
+            <p className="dary-metric-label">
+              {locale === 'ar' ? 'الأسرّة المشغولة حاليًا' : 'Occupied Beds'}
             </p>
           </div>
         </div>
       </div>
 
-      {/* 3. Section A: Property Status (GET /dashboard/owner/properties/status) */}
-      <div className="dary-section-card">
-        <div className="dary-section-header">
-          <div>
-            <h3>{locale === 'ar' ? 'حالة العقارات المسجلة' : 'Properties Status'}</h3>
-            <span style={{ fontSize: '0.8rem', color: 'var(--dary-muted)' }}>
-              GET /dashboard/owner/properties/status
-            </span>
+      {/* 3. Status Highlights Grid (Properties Status + Bookings Status) */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
+        {/* Properties Status Card */}
+        <div className="dary-section-card" style={{ margin: 0 }}>
+          <div className="dary-section-header">
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0B2A4A', margin: 0 }}>
+                {locale === 'ar' ? '🏢 حالة العقارات المسجلة' : '🏢 Properties Status'}
+              </h3>
+            </div>
+            <Link to={`${basePath}/properties`} className="dary-view-all-link" style={{ fontSize: '0.85rem' }}>
+              <span>{locale === 'ar' ? 'عرض الكل' : 'View All'}</span>
+              <span>←</span>
+            </Link>
           </div>
-          <Link to={`${basePath}/properties`} className="dary-view-all-link">
-            <span>{locale === 'ar' ? 'عرض العقارات' : 'View All'}</span>
-            <span>→</span>
-          </Link>
+
+          {loadingProps ? (
+            <div style={{ padding: '2rem 0', textAlign: 'center', color: '#64748B' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'جاري تحميل العقارات...' : 'Loading properties...'}</p>
+            </div>
+          ) : propStatusList.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'لا توجد عقارات مسجلة حتى الآن.' : 'No properties found.'}</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+              {propStatusList.map((item) => {
+                const isApproved = item.status === 'APPROVED' || item.status === 'PUBLISHED';
+                const isPending = item.status === 'PENDING' || item.status === 'UNDERREVIEW';
+                const isRejected = item.status === 'REJECTED';
+                const bg = isApproved ? '#DCFCE7' : isPending ? '#FEF9C3' : isRejected ? '#FEE2E2' : '#F1F5F9';
+                const color = isApproved ? '#15803D' : isPending ? '#A16207' : isRejected ? '#B91C1C' : '#475569';
+
+                return (
+                  <div
+                    key={item.status}
+                    style={{
+                      padding: '1rem',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '12px',
+                      backgroundColor: '#FFFFFF',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0B2A4A', marginBottom: '0.35rem' }}>
+                      {item.count}
+                    </div>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        backgroundColor: bg,
+                        color: color,
+                      }}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
-        {loadingProps ? (
-          <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--dary-muted)' }}>
-            <div style={{ width: '30px', height: '30px', border: '3px solid #E2E8F0', borderTopColor: '#0B2A4A', borderRadius: '50%', margin: '0 auto 0.75rem', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'جاري تحميل حالة العقارات...' : 'Loading property status...'}</p>
+        {/* Bookings Status Card */}
+        <div className="dary-section-card" style={{ margin: 0 }}>
+          <div className="dary-section-header">
+            <div>
+              <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0B2A4A', margin: 0 }}>
+                {locale === 'ar' ? '📋 حالة طلبات الحجز' : '📋 Bookings Status'}
+              </h3>
+            </div>
+            <Link to={`${basePath}/bookings`} className="dary-view-all-link" style={{ fontSize: '0.85rem' }}>
+              <span>{locale === 'ar' ? 'عرض الكل' : 'View All'}</span>
+              <span>←</span>
+            </Link>
           </div>
-        ) : propsError ? (
-          <div className="dary-error-state">
-            <p className="dary-error-title">{locale === 'ar' ? 'فشل تحميل حالة العقارات' : 'Failed to Load Property Status'}</p>
-            <p className="dary-error-desc">{propsError}</p>
-            <button type="button" className="dary-retry-btn" onClick={fetchPropertiesStatus}>
-              {locale === 'ar' ? 'إعادة المحاولة' : 'Retry'}
-            </button>
-          </div>
-        ) : propStatusList.length === 0 ? (
-          <div className="dary-empty-state">
-            <div className="dary-empty-icon">🏠</div>
-            <h4 className="dary-empty-title">{locale === 'ar' ? 'لا توجد عقارات مسجلة' : 'No Properties Found'}</h4>
-            <p className="dary-empty-desc">
+
+          {loadingBookings ? (
+            <div style={{ padding: '2rem 0', textAlign: 'center', color: '#64748B' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'جاري تحميل الحجوزات...' : 'Loading bookings...'}</p>
+            </div>
+          ) : bookingStatusList.length === 0 ? (
+            <div style={{ padding: '2rem', textAlign: 'center', color: '#64748B' }}>
+              <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'لا توجد طلبات حجز مسجلة.' : 'No bookings found.'}</p>
+            </div>
+          ) : (
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.75rem' }}>
+              {bookingStatusList.map((item) => {
+                const isConfirmed = item.status === 'CONFIRMED' || item.status === 'CLOSED';
+                const isContacted = item.status === 'CONTACTED';
+                const isPending = item.status === 'PENDING';
+                const bg = isConfirmed ? '#DCFCE7' : isContacted ? '#E0F2FE' : isPending ? '#FEF9C3' : '#FEE2E2';
+                const color = isConfirmed ? '#15803D' : isContacted ? '#0369A1' : isPending ? '#A16207' : '#B91C1C';
+
+                return (
+                  <div
+                    key={item.status}
+                    style={{
+                      padding: '1rem',
+                      border: '1px solid #E2E8F0',
+                      borderRadius: '12px',
+                      backgroundColor: '#FFFFFF',
+                      textAlign: 'center',
+                    }}
+                  >
+                    <div style={{ fontSize: '1.6rem', fontWeight: 800, color: '#0B2A4A', marginBottom: '0.35rem' }}>
+                      {item.count}
+                    </div>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        padding: '0.2rem 0.55rem',
+                        borderRadius: '9999px',
+                        fontSize: '0.75rem',
+                        fontWeight: 700,
+                        backgroundColor: bg,
+                        color: color,
+                      }}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* 3b. My Properties Cards Grid */}
+      <div className="dary-section-card" style={{ marginBottom: '1.5rem' }}>
+        <div className="dary-section-header">
+          <div>
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0B2A4A', margin: 0 }}>
+              {locale === 'ar' ? '🏢 عقاراتي المسجلة' : '🏢 My Registered Properties'}
+            </h3>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: '#64748B' }}>
               {locale === 'ar'
-                ? 'لم تقم بإضافة أي عقار إلى حسابك حتى الآن.'
-                : 'No properties registered to your owner account yet.'}
+                ? 'نظرة سريعة على عقاراتك المضافة وحالة اعتمادها من قبل إدارة المنصة.'
+                : 'Quick overview of your registered properties and their verification status.'}
             </p>
           </div>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            <Link
+              to={`${basePath}/properties/new`}
+              className="dary-primary-btn"
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.825rem', backgroundColor: '#16A34A', textDecoration: 'none' }}
+            >
+              <span>+</span> {locale === 'ar' ? 'إضافة عقار' : 'Add Property'}
+            </Link>
+            <Link
+              to={`${basePath}/properties`}
+              className="dary-secondary-btn"
+              style={{ padding: '0.45rem 0.85rem', fontSize: '0.825rem', textDecoration: 'none' }}
+            >
+              <span>{locale === 'ar' ? 'إدارة الكل' : 'Manage All'}</span>
+              <span>←</span>
+            </Link>
+          </div>
+        </div>
+
+        {loadingMyProps ? (
+          <div style={{ padding: '2.5rem 0', textAlign: 'center', color: '#64748B' }}>
+            <div style={{ width: '30px', height: '30px', border: '3px solid #E2E8F0', borderTopColor: '#0B2A4A', borderRadius: '50%', margin: '0 auto 0.75rem', animation: 'spin 0.8s linear infinite' }} />
+            <p style={{ margin: 0, fontSize: '0.85rem' }}>{locale === 'ar' ? 'جاري تحميل العقارات...' : 'Loading properties...'}</p>
+          </div>
+        ) : myPropertiesList.length === 0 ? (
+          <div className="dary-empty-state" style={{ padding: '2rem' }}>
+            <div className="dary-empty-icon" style={{ fontSize: '2.5rem' }}>🏢</div>
+            <h4 className="dary-empty-title">{locale === 'ar' ? 'لا توجد عقارات مسجلة حتى الآن' : 'No Properties Yet'}</h4>
+            <p className="dary-empty-desc">
+              {locale === 'ar'
+                ? 'ابدأ بإضافة وحداتك السكنية وسكناتك الطلابية لتتم مراجعتها ونشرها للطلاب.'
+                : 'Add your student housing properties to start receiving bookings.'}
+            </p>
+            <Link
+              to={`${basePath}/properties/new`}
+              className="dary-primary-btn"
+              style={{ textDecoration: 'none', marginTop: '0.75rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+            >
+              <span>+</span> {locale === 'ar' ? 'إضافة عقار جديد' : 'Add Property'}
+            </Link>
+          </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-            {propStatusList.map((item) => (
-              <div
-                key={item.status}
-                style={{
-                  padding: '1.25rem',
-                  border: '1px solid var(--dary-border)',
-                  borderRadius: '12px',
-                  backgroundColor: '#FFFFFF',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--dary-navy)', marginBottom: '0.35rem' }}>
-                  {item.count}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.25rem' }}>
+            {myPropertiesList.slice(0, 6).map((prop) => {
+              const image =
+                prop.primaryImage ||
+                (Array.isArray(prop.images) && prop.images.length > 0
+                  ? typeof prop.images[0] === 'string'
+                    ? prop.images[0]
+                    : prop.images[0]?.url
+                  : '') ||
+                (Array.isArray(prop.rooms_) && prop.rooms_.length > 0
+                  ? prop.rooms_[0]?.photoUrl
+                  : '') ||
+                'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&q=80&w=600&h=400&fit=crop';
+
+              const price =
+                prop.startingPrice ||
+                prop.price ||
+                (prop as any).pricePerMonth ||
+                (Array.isArray(prop.rooms_) && prop.rooms_.length > 0
+                  ? Math.min(...prop.rooms_.map((r: any) => Number(r.pricePerBed) || 0).filter((p: number) => p > 0))
+                  : null);
+
+              const roomCount =
+                (Array.isArray(prop.rooms_) && prop.rooms_.length > 0 ? prop.rooms_.length : null) ||
+                (typeof prop.rooms === 'number' && prop.rooms > 0 ? prop.rooms : null) ||
+                1;
+
+              const s = (prop.status || '').toUpperCase();
+              const isApproved = s === 'APPROVED' || s === 'ACTIVE';
+              const isPending = s === 'PENDING';
+
+              return (
+                <div
+                  key={prop.id}
+                  style={{
+                    border: '1px solid #E2E8F0',
+                    borderRadius: '12px',
+                    overflow: 'hidden',
+                    backgroundColor: '#FFFFFF',
+                    display: 'flex',
+                    flexDirection: 'column',
+                  }}
+                >
+                  <div style={{ position: 'relative', height: '140px', backgroundColor: '#F1F5F9' }}>
+                    <img
+                      src={image}
+                      alt={prop.title}
+                      style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&q=80&w=600&h=400&fit=crop';
+                      }}
+                    />
+                    <div style={{ position: 'absolute', top: '8px', insetInlineStart: '8px' }}>
+                      <span
+                        style={{
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '9999px',
+                          fontSize: '0.725rem',
+                          fontWeight: 700,
+                          backgroundColor: isApproved ? '#DCFCE7' : isPending ? '#FEF9C3' : '#FEE2E2',
+                          color: isApproved ? '#15803D' : isPending ? '#A16207' : '#B91C1C',
+                        }}
+                      >
+                        {isApproved ? (locale === 'ar' ? '✓ معتمد' : 'Approved') : isPending ? (locale === 'ar' ? '⏳ قيد المراجعة' : 'Pending') : prop.status}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div style={{ padding: '1rem', display: 'flex', flexDirection: 'column', flex: 1 }}>
+                    <h4 style={{ margin: '0 0 0.25rem', fontSize: '0.95rem', fontWeight: 700, color: '#0B2A4A' }}>
+                      {prop.title}
+                    </h4>
+                    <p style={{ margin: '0 0 0.5rem', fontSize: '0.775rem', color: '#64748B' }}>
+                      📍 {prop.city ? `${prop.city} • ` : ''}{prop.district || prop.address || ''}
+                    </p>
+
+                    <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.75rem', fontSize: '0.75rem', color: '#64748B' }}>
+                      <span style={{ backgroundColor: '#F8FAFC', padding: '0.15rem 0.45rem', borderRadius: '4px' }}>
+                        🛏️ {roomCount} {locale === 'ar' ? 'غرف' : 'Rooms'}
+                      </span>
+                    </div>
+
+                    <div style={{ marginTop: 'auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid #F1F5F9' }}>
+                      <span style={{ fontWeight: 800, color: '#2F6BFF', fontSize: '1rem' }}>
+                        {price && !isNaN(Number(price)) ? Number(price).toLocaleString() : '—'}{' '}
+                        <span style={{ fontSize: '0.7rem', fontWeight: 500, color: '#64748B' }}>{locale === 'ar' ? 'ج.م' : 'EGP'}</span>
+                      </span>
+
+                      <Link
+                        to={`/properties/${prop.id}`}
+                        style={{
+                          fontSize: '0.775rem',
+                          fontWeight: 600,
+                          color: '#0B2A4A',
+                          textDecoration: 'none',
+                        }}
+                      >
+                        {locale === 'ar' ? 'معاينة ←' : 'View →'}
+                      </Link>
+                    </div>
+                  </div>
                 </div>
-                <span className="dary-badge" style={{ backgroundColor: '#F1F5F9', color: '#0B2A4A' }}>
-                  {item.status}
-                </span>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
 
-      {/* 4. Section B: Booking Status (GET /dashboard/owner/bookings/status) */}
+      {/* 4. Occupancy & Calendar Summary */}
       <div className="dary-section-card">
         <div className="dary-section-header">
           <div>
-            <h3>{locale === 'ar' ? 'حالة طلبات الحجز' : 'Bookings Status'}</h3>
-            <span style={{ fontSize: '0.8rem', color: 'var(--dary-muted)' }}>
-              GET /dashboard/owner/bookings/status
-            </span>
-          </div>
-          <Link to={`${basePath}/bookings`} className="dary-view-all-link">
-            <span>{locale === 'ar' ? 'عرض الحجوزات' : 'View All'}</span>
-            <span>→</span>
-          </Link>
-        </div>
-
-        {loadingBookings ? (
-          <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--dary-muted)' }}>
-            <div style={{ width: '30px', height: '30px', border: '3px solid #E2E8F0', borderTopColor: '#0B2A4A', borderRadius: '50%', margin: '0 auto 0.75rem', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'جاري تحميل حالة الحجوزات...' : 'Loading booking status...'}</p>
-          </div>
-        ) : bookingsError ? (
-          <div className="dary-error-state">
-            <p className="dary-error-title">{locale === 'ar' ? 'فشل تحميل حالة الحجوزات' : 'Failed to Load Booking Status'}</p>
-            <p className="dary-error-desc">{bookingsError}</p>
-            <button type="button" className="dary-retry-btn" onClick={fetchBookingsStatus}>
-              {locale === 'ar' ? 'إعادة المحاولة' : 'Retry'}
-            </button>
-          </div>
-        ) : bookingStatusList.length === 0 ? (
-          <div className="dary-empty-state">
-            <div className="dary-empty-icon">📋</div>
-            <h4 className="dary-empty-title">{locale === 'ar' ? 'لا توجد طلبات حجز' : 'No Bookings Found'}</h4>
-            <p className="dary-empty-desc">
+            <h3 style={{ fontSize: '1.15rem', fontWeight: 800, color: '#0B2A4A', margin: 0 }}>
+              {locale === 'ar' ? '🗓️ ملخص الإشغال وجداول التسكين' : '🗓️ Occupancy & Calendar Overview'}
+            </h3>
+            <p style={{ margin: '0.35rem 0 0', fontSize: '0.85rem', color: '#64748B' }}>
               {locale === 'ar'
-                ? 'لم يتم تسجيل أي طلبات حجز لعقاراتك بعد.'
-                : 'No bookings registered for your properties yet.'}
+                ? 'متابعة مباشرة لمواعيد وصول الطلاب، فترات الحجز السارية، والعقود التي توشك على الانتهاء.'
+                : 'Real-time overview of active student stays, upcoming arrivals, and expiring leases.'}
             </p>
           </div>
-        ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
-            {bookingStatusList.map((item) => (
-              <div
-                key={item.status}
-                style={{
-                  padding: '1.25rem',
-                  border: '1px solid var(--dary-border)',
-                  borderRadius: '12px',
-                  backgroundColor: '#FFFFFF',
-                  textAlign: 'center',
-                }}
-              >
-                <div style={{ fontSize: '1.75rem', fontWeight: 800, color: 'var(--dary-blue)', marginBottom: '0.35rem' }}>
-                  {item.count}
-                </div>
-                <span className="dary-badge" style={{ backgroundColor: '#EEF3FF', color: '#2F6BFF' }}>
-                  {item.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 5. Section D: Calendar Summary (GET /dashboard/owner/calendar/summary) */}
-      <div className="dary-section-card">
-        <div className="dary-section-header">
-          <div>
-            <h3>{locale === 'ar' ? 'ملخص التقويم والمواعيد' : 'Calendar Summary'}</h3>
-            <span style={{ fontSize: '0.8rem', color: 'var(--dary-muted)' }}>
-              GET /dashboard/owner/calendar/summary
-            </span>
-          </div>
-          <Link to={`${basePath}/calendar`} className="dary-view-all-link">
-            <span>{locale === 'ar' ? 'فتح التقويم' : 'Open Calendar'}</span>
-            <span>→</span>
+          <Link
+            to={`${basePath}/calendar`}
+            className="dary-primary-btn"
+            style={{ padding: '0.5rem 1rem', fontSize: '0.85rem', textDecoration: 'none' }}
+          >
+            <span>{locale === 'ar' ? 'فتح التقويم الكامل' : 'Open Full Calendar'}</span>
+            <span>←</span>
           </Link>
         </div>
 
         {loadingCalendar ? (
-          <div style={{ padding: '2rem 0', textAlign: 'center', color: 'var(--dary-muted)' }}>
-            <div style={{ width: '30px', height: '30px', border: '3px solid #E2E8F0', borderTopColor: '#0B2A4A', borderRadius: '50%', margin: '0 auto 0.75rem', animation: 'spin 0.8s linear infinite' }} />
-            <p style={{ margin: 0, fontSize: '0.875rem' }}>{locale === 'ar' ? 'جاري تحميل ملخص التقويم...' : 'Loading calendar...'}</p>
+          <div style={{ padding: '2.5rem 0', textAlign: 'center', color: '#64748B' }}>
+            <p style={{ margin: 0, fontSize: '0.9rem' }}>{locale === 'ar' ? 'جاري تحميل ملخص التقويم...' : 'Loading calendar...'}</p>
           </div>
         ) : calendarError ? (
           <div className="dary-error-state">
-            <p className="dary-error-title">{locale === 'ar' ? 'فشل تحميل التقويم' : 'Failed to Load Calendar'}</p>
             <p className="dary-error-desc">{calendarError}</p>
             <button type="button" className="dary-retry-btn" onClick={fetchCalendar}>
               {locale === 'ar' ? 'إعادة المحاولة' : 'Retry'}
             </button>
           </div>
-        ) : !calendarData || (Array.isArray(calendarData) && calendarData.length === 0) ? (
-          <div className="dary-empty-state">
-            <div className="dary-empty-icon">📅</div>
-            <h4 className="dary-empty-title">{locale === 'ar' ? 'لا توجد مواعيد بالتقويم حاليًا' : 'No Calendar Events'}</h4>
-            <p className="dary-empty-desc">
-              {locale === 'ar'
-                ? 'ستظهر هنا المواعيد، فترات الحجز، وتواريخ بدء وانتهاء الإيجار تلقائيًا.'
-                : 'Booking schedules, check-in, and check-out dates will appear here automatically.'}
-            </p>
-          </div>
         ) : (
-          <div style={{ padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '10px' }}>
-            <pre style={{ margin: 0, fontSize: '0.85rem', overflowX: 'auto', fontFamily: 'monospace' }}>
-              {JSON.stringify(calendarData, null, 2)}
-            </pre>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem' }}>
+            <div style={{ padding: '1.25rem', backgroundColor: '#F0FDF4', borderRadius: '12px', border: '1px solid #BBF7D0' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#166534', display: 'block', marginBottom: '0.4rem' }}>
+                🟢 {locale === 'ar' ? 'الحجوزات السارية الآن' : 'Active Bookings'}
+              </span>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#14532D' }}>
+                {activeBookings}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: '#15803D' }}>
+                {locale === 'ar' ? 'طلاب مقيمون حاليًا بالسكن' : 'Students currently staying'}
+              </span>
+            </div>
+
+            <div style={{ padding: '1.25rem', backgroundColor: '#EFF6FF', borderRadius: '12px', border: '1px solid #BFDBFE' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#1E40AF', display: 'block', marginBottom: '0.4rem' }}>
+                🟡 {locale === 'ar' ? 'الحجوزات القادمة' : 'Upcoming Bookings'}
+              </span>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#1E3A8A' }}>
+                {upcomingBookings}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: '#2563EB' }}>
+                {locale === 'ar' ? 'مواعيد وصول وتسكين قادمة' : 'Upcoming check-in dates'}
+              </span>
+            </div>
+
+            <div style={{ padding: '1.25rem', backgroundColor: '#FFFBEB', borderRadius: '12px', border: '1px solid #FDE68A' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#92400E', display: 'block', marginBottom: '0.4rem' }}>
+                ⏰ {locale === 'ar' ? 'تنتهي خلال 30 يوماً' : 'Expiring Soon'}
+              </span>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#78350F' }}>
+                {expiringSoon}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: '#D97706' }}>
+                {locale === 'ar' ? 'عقود وحجوزات توشك على الانتهاء' : 'Contracts expiring within 30 days'}
+              </span>
+            </div>
+
+            <div style={{ padding: '1.25rem', backgroundColor: '#FAF5FF', borderRadius: '12px', border: '1px solid #E9D5FF' }}>
+              <span style={{ fontSize: '0.8rem', fontWeight: 600, color: '#6B21A8', display: 'block', marginBottom: '0.4rem' }}>
+                🛏️ {locale === 'ar' ? 'الأسرّة المشغولة' : 'Occupied Beds'}
+              </span>
+              <div style={{ fontSize: '1.75rem', fontWeight: 800, color: '#581C87' }}>
+                {occupiedBeds}
+              </div>
+              <span style={{ fontSize: '0.75rem', color: '#9333EA' }}>
+                {locale === 'ar' ? 'إجمالي الأسرّة المحجوزة' : 'Total occupied beds'}
+              </span>
+            </div>
           </div>
         )}
       </div>

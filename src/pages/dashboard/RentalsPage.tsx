@@ -188,13 +188,13 @@ export default function RentalsPage() {
                       </p>
                     </div>
 
-                    {rental.property?.price && (
+                    {(rental.totalPrice || rental.room?.pricePerBed || rental.property?.startingPrice || rental.property?.price) && (
                       <div style={{ textAlign: locale === 'ar' ? 'left' : 'right' }}>
                         <span style={{ fontSize: '1.25rem', fontWeight: 800, color: 'var(--dary-blue)' }}>
-                          {rental.property.price}
+                          {rental.totalPrice || rental.room?.pricePerBed || rental.property?.startingPrice || rental.property?.price}
                         </span>
                         <span style={{ fontSize: '0.8rem', color: 'var(--dary-muted)', marginInlineStart: '0.35rem' }}>
-                          {locale === 'ar' ? 'ج.م / شهريًا' : 'EGP / mo'}
+                          {locale === 'ar' ? 'ج.م' : 'EGP'}
                         </span>
                       </div>
                     )}
@@ -203,7 +203,7 @@ export default function RentalsPage() {
                   <div
                     style={{
                       display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))',
+                      gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))',
                       gap: '0.75rem',
                       padding: '0.85rem 1rem',
                       backgroundColor: '#F8FAFC',
@@ -217,16 +217,31 @@ export default function RentalsPage() {
                         {rental.createdAt ? new Date(rental.createdAt).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US') : '—'}
                       </strong>
                     </div>
+                    {rental.room?.roomType && (
+                      <div>
+                        <span style={{ color: 'var(--dary-muted)', display: 'block' }}>{locale === 'ar' ? 'نوع الغرفة' : 'Room Type'}</span>
+                        <strong style={{ color: 'var(--dary-navy)' }}>{rental.room.roomType}</strong>
+                      </div>
+                    )}
                     <div>
                       <span style={{ color: 'var(--dary-muted)', display: 'block' }}>{locale === 'ar' ? 'عدد الأسرة' : 'Beds Requested'}</span>
                       <strong style={{ color: 'var(--dary-navy)' }}>{rental.bedsRequested || 1}</strong>
                     </div>
                     <div>
-                      <span style={{ color: 'var(--dary-muted)', display: 'block' }}>{locale === 'ar' ? 'تاريخ البدء' : 'Start Date'}</span>
+                      <span style={{ color: 'var(--dary-muted)', display: 'block' }}>{locale === 'ar' ? 'فترة الحجز' : 'Stay Period'}</span>
                       <strong style={{ color: 'var(--dary-navy)' }}>
                         {rental.startDate ? new Date(rental.startDate).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US') : '—'}
+                        {rental.endDate ? ` → ${new Date(rental.endDate).toLocaleDateString(locale === 'ar' ? 'ar-EG' : 'en-US')}` : ''}
                       </strong>
                     </div>
+                    {rental.monthsCount && (
+                      <div>
+                        <span style={{ color: 'var(--dary-muted)', display: 'block' }}>{locale === 'ar' ? 'عدد الشهور' : 'Duration'}</span>
+                        <strong style={{ color: 'var(--dary-navy)' }}>
+                          {rental.monthsCount} {locale === 'ar' ? 'شهر' : 'months'}
+                        </strong>
+                      </div>
+                    )}
                     <div>
                       <span style={{ color: 'var(--dary-muted)', display: 'block' }}>{locale === 'ar' ? 'رقم الحجز' : 'Booking ID'}</span>
                       <strong style={{ color: 'var(--dary-navy)', fontFamily: 'monospace' }}>

@@ -10,6 +10,14 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [removingId, setRemovingId] = useState<string | null>(null);
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (actionMessage) {
+      const timer = setTimeout(() => setActionMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionMessage]);
 
   const fetchFavorites = useCallback(async () => {
     setLoading(true);
@@ -36,14 +44,22 @@ export default function FavoritesPage() {
 
   async function handleRemove(propertyId: string) {
     setRemovingId(propertyId);
+    setActionMessage(null);
     try {
       await TenantService.removeFavorite(propertyId);
       setFavorites((prev) =>
         prev.filter((f) => f.propertyId !== propertyId && f.property?.id !== propertyId && f.id !== propertyId)
       );
+      setActionMessage({
+        type: 'success',
+        text: locale === 'ar' ? 'تمت إزالة العقار من المفضلة.' : 'Property removed from favorites.',
+      });
     } catch (err: any) {
       console.error('[FavoritesPage] Remove favorite error:', err);
-      alert(err?.message || (locale === 'ar' ? 'فشل إزالة العقار من المفضلة' : 'Failed to remove favorite'));
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشل إزالة العقار من المفضلة' : 'Failed to remove favorite'),
+      });
     } finally {
       setRemovingId(null);
     }
@@ -51,6 +67,33 @@ export default function FavoritesPage() {
 
   return (
     <div>
+      {actionMessage && (
+        <div
+          style={{
+            marginBottom: '1rem',
+            padding: '0.75rem 1.25rem',
+            borderRadius: '10px',
+            backgroundColor: actionMessage.type === 'success' ? '#DEF7EC' : '#FDE8E8',
+            color: actionMessage.type === 'success' ? '#03543F' : '#9B1C1C',
+            border: `1px solid ${actionMessage.type === 'success' ? '#31C48D' : '#F98080'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+          }}
+        >
+          <span>{actionMessage.type === 'success' ? '✓ ' : '✕ '}{actionMessage.text}</span>
+          <button
+            type="button"
+            onClick={() => setActionMessage(null)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700 }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="dary-section-card">
         <div className="dary-section-header">
           <div>

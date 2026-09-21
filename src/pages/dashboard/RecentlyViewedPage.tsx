@@ -10,6 +10,15 @@ export default function RecentlyViewedPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isClearing, setIsClearing] = useState(false);
+  const [confirmClearModal, setConfirmClearModal] = useState(false);
+  const [actionMessage, setActionMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+
+  useEffect(() => {
+    if (actionMessage) {
+      const timer = setTimeout(() => setActionMessage(null), 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [actionMessage]);
 
   const fetchRecentlyViewed = useCallback(async () => {
     setLoading(true);
@@ -18,12 +27,12 @@ export default function RecentlyViewedPage() {
       const data = await TenantService.getRecentlyViewed();
       setItems(data);
     } catch (err: any) {
-      console.error('[RecentlyViewedPage] GET failed:', err);
+      console.error('[RecentlyViewedPage] GET /recently-viewed failed:', err);
       setError(
         err?.message ||
           (locale === 'ar'
-            ? 'تعذر تحميل العقارات التي شاهدتها مؤخرًا من الخادم.'
-            : 'Could not load recently viewed properties.')
+            ? 'تعذر تحميل سجل المشاهدة من الخادم.'
+            : 'Could not load recently viewed items from the server.')
       );
     } finally {
       setLoading(false);
@@ -42,21 +51,34 @@ export default function RecentlyViewedPage() {
       );
     } catch (err: any) {
       console.error('[RecentlyViewedPage] Remove item error:', err);
-      alert(err?.message || (locale === 'ar' ? 'فشل حذف العنصر من السجل' : 'Failed to remove from history'));
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشل حذف العنصر من السجل' : 'Failed to remove from history'),
+      });
     }
   }
 
-  async function handleClearAll() {
-    if (!confirm(locale === 'ar' ? 'هل أنت متأكد من مسح سجل المشاهدة بالكامل؟' : 'Clear all recently viewed history?')) {
-      return;
-    }
+  function handleClearAll() {
+    setConfirmClearModal(true);
+  }
+
+  async function handleConfirmClearAll() {
     setIsClearing(true);
+    setActionMessage(null);
     try {
       await TenantService.clearRecentlyViewed();
       setItems([]);
+      setConfirmClearModal(false);
+      setActionMessage({
+        type: 'success',
+        text: locale === 'ar' ? 'تم مسح سجل المشاهدة بالكامل.' : 'Recently viewed history cleared.',
+      });
     } catch (err: any) {
       console.error('[RecentlyViewedPage] Clear all error:', err);
-      alert(err?.message || (locale === 'ar' ? 'فشل مسح السجل' : 'Failed to clear history'));
+      setActionMessage({
+        type: 'error',
+        text: err?.message || (locale === 'ar' ? 'فشل مسح السجل' : 'Failed to clear history'),
+      });
     } finally {
       setIsClearing(false);
     }
@@ -64,6 +86,33 @@ export default function RecentlyViewedPage() {
 
   return (
     <div>
+      {actionMessage && (
+        <div
+          style={{
+            marginBottom: '1rem',
+            padding: '0.75rem 1.25rem',
+            borderRadius: '10px',
+            backgroundColor: actionMessage.type === 'success' ? '#DEF7EC' : '#FDE8E8',
+            color: actionMessage.type === 'success' ? '#03543F' : '#9B1C1C',
+            border: `1px solid ${actionMessage.type === 'success' ? '#31C48D' : '#F98080'}`,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            fontWeight: 600,
+            fontSize: '0.875rem',
+          }}
+        >
+          <span>{actionMessage.type === 'success' ? '✓ ' : '✕ '}{actionMessage.text}</span>
+          <button
+            type="button"
+            onClick={() => setActionMessage(null)}
+            style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'inherit', fontWeight: 700 }}
+          >
+            ×
+          </button>
+        </div>
+      )}
+
       <div className="dary-section-card">
         <div className="dary-section-header">
           <div>
@@ -234,6 +283,78 @@ export default function RecentlyViewedPage() {
           </div>
         )}
       </div>
+
+      {/* Clear All Confirmation Modal */}
+      {confirmClearModal && (
+        <div
+          style={{
+            position: 'fixed',
+            inset: 0,
+            backgroundColor: 'rgba(0, 0, 0, 0.5)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 9999,
+            padding: '1rem',
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: '#FFFFFF',
+              borderRadius: '12px',
+              padding: '1.5rem',
+              maxWidth: '420px',
+              width: '100%',
+              boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)',
+            }}
+          >
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: '#0B2A4A', marginBottom: '0.5rem' }}>
+              {locale === 'ar' ? 'مسح سجل المشاهدة' : 'Clear View History'}
+            </h3>
+            <p style={{ fontSize: '0.85rem', color: '#64748B', marginBottom: '1.25rem' }}>
+              {locale === 'ar'
+                ? 'هل أنت متأكد من مسح جميع العقارات التي شاهدتها مؤخرًا من سجلك؟'
+                : 'Are you sure you want to clear your entire recently viewed housing history?'}
+            </p>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                onClick={() => setConfirmClearModal(false)}
+                style={{
+                  padding: '0.55rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid #CBD5E1',
+                  backgroundColor: '#FFFFFF',
+                  color: '#64748B',
+                  fontWeight: 600,
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                }}
+              >
+                {locale === 'ar' ? 'تراجع' : 'Cancel'}
+              </button>
+              <button
+                type="button"
+                disabled={isClearing}
+                onClick={handleConfirmClearAll}
+                style={{
+                  padding: '0.55rem 1.25rem',
+                  borderRadius: '8px',
+                  backgroundColor: '#DC2626',
+                  color: '#FFFFFF',
+                  fontWeight: 700,
+                  fontSize: '0.875rem',
+                  cursor: isClearing ? 'not-allowed' : 'pointer',
+                  border: 'none',
+                }}
+              >
+                {isClearing ? '...' : (locale === 'ar' ? 'مسح السجل' : 'Clear All')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

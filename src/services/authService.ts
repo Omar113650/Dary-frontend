@@ -155,8 +155,20 @@ export class AuthService {
    */
   static async getMe(): Promise<User> {
     const res = await ApiClient.get<any>('/profile/me');
-    const data = res?.data?.user || res?.data || res?.user || res;
-    return data as User;
+    const profile = res?.data?.profile || res?.profile || res?.data || res;
+    const user = profile?.user || profile;
+    return {
+      id: user?.id || profile?.userId,
+      ...user,
+      profile: profile,
+      role:
+        user?.role ||
+        profile?.role ||
+        (Array.isArray(user?.roles) ? user.roles[0] : null) ||
+        (Array.isArray(profile?.roles) ? profile.roles[0] : null),
+      roles: user?.roles || profile?.roles,
+      userRoles: user?.userRoles || profile?.userRoles,
+    } as User;
   }
 
   /**
