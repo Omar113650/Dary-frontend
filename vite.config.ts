@@ -7,7 +7,7 @@ export default defineConfig({
   server: {
     proxy: {
       '/api/v1': {
-        target: 'http://localhost:8003',
+        target: 'https://dary-student-housing.vercel.app',
         changeOrigin: true,
       },
     },
